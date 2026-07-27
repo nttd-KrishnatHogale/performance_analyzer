@@ -1,0 +1,102 @@
+application:
+  name: Performance Engineering Platform
+  version: 1.0
+
+execution:
+  mode: local 
+
+jmeter:
+  home: C:/apache-jmeter-5.6.3
+  # home: C:/Users/user1/Desktop/apache-jmeter-5.1.1
+  executable: "C:/apache-jmeter-5.6.3/apache-jmeter-5.6.3/bin/jmeter.bat"
+  # executable : "C:/Users/user1/Desktop/apache-jmeter-5.1.1/apache-jmeter-5.1.1/bin/jmeter.bat"
+  test_plan: C:/KrishnatHOgale/PerformancePlatform/tests/JPetstore.jmx
+  # test_plan: C:/Users/user1/Desktop/apache-jmeter-5.1.1/Vishali/JPetstore.jmx
+  results_directory: reports/jmeter
+
+  jvm_args: "-Xms512m -Xmx2g"
+
+  # jmx_file: "C:/Users/user1/Desktop/apache-jmeter-5.1.1/Vishali/JPetstore.jmx"
+
+  # result_csv: "C:/Users/user1/Desktop/Report/results.csv"
+
+  # html_report: "C:/Users/user1/Desktop/Report/HTMLReport"
+
+# influxdb:
+
+#   host: "10.10.10.20"
+
+#   port: 8086
+
+#   database: "monitoring"
+
+bastion:
+  host: 52.66.6.198
+  username: Krishnat.Hogale
+  pem_file: keys/Krishnat.Hogale.pem
+
+influxdb:
+  host: 10.31.4.155
+  port: 8086
+  database: macaDB
+  username: admin
+  password: admin
+  ssl: false
+
+application:
+  name: JPetStore
+
+  url: "http://10.31.4.84/jpetstore/"
+
+  host: "10.31.4.84"
+
+  os: linux
+
+  ssh:
+    username: ec2-user
+    pem_file: "keys/application.pem"
+
+runtime:
+  polling_interval: 30
+  save_directory: reports/runtime
+
+client:
+  host: "10.31.4.193"
+
+
+
+# reports:
+
+#   html_dir: "./reports/html"
+
+#   json_dir: "./reports/json"
+
+logging:
+
+  level: "INFO"
+
+  log_file: "./logs/application.log"
+
+database:
+
+  type: sqlite
+
+  name: performance_platform.db
+
+  echo: false
+
+performance_analyzer:
+  config: "performance_analyzer/config/monitoring_config.yaml"
+
+
+remote_jmeter:
+  host: "10.31.4.193"
+  username: "user1"
+
+  # Don't keep passwords in source control.
+  # Read from environment variables or a secure secrets store.
+  password_env: "JMETER_REMOTE_PASSWORD"
+
+  jmeter_home: "C:/apache-jmeter/bin"
+  test_plan: "C:/PerformancePlatform/tests/JPetStore.jmx"
+  results_directory: "C:/PerformancePlatform/results"

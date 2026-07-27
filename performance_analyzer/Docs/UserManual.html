@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>PerformanceAnalyst – User Manual</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0 1.5rem 3rem;
+            background: #fafafa;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: #222;
+        }
+
+        h1 {
+            margin-top: 1.5rem;
+        }
+
+        h2 {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 0.25rem;
+            margin-top: 1.75rem;
+        }
+
+        code {
+            font-family: Consolas, monospace;
+            background: #f3f3f3;
+            padding: 0.1rem 0.25rem;
+            border-radius: 3px;
+        }
+
+        pre {
+            background: #f3f3f3;
+            padding: 0.75rem;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 0.15rem 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.75rem 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 0.4rem 0.5rem;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .checklist li {
+            margin: 0.15rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>PerformanceAnalyst – User Manual</h1>
+    <p>
+        This manual explains how to configure and run the <strong>PerformanceAnalyst</strong> application.
+    </p>
+    <p class="note">
+        Project root: <code>c:\Nikhil P\SVN\Asset\13_PerformanceAnalyst\PerformanceAnalyst</code><br />
+        Entry point: <code>Main.py</code>
+    </p>
+
+    <div class="toc">
+        <h2>Contents</h2>
+        <ul>
+            <li><a href="#prereq">1. Prerequisites</a></li>
+            <li><a href="#config">2. Configuration</a></li>
+            <li><a href="#running">3. Running the Application</a></li>
+            <li><a href="#outputs">4. Outputs</a></li>
+            <li><a href="#checklist">5. Typical Run Checklist</a></li>
+            <li><a href="#troubleshooting">6. Troubleshooting</a></li>
+        </ul>
+    </div>
+
+    <h2 id="prereq">1. Prerequisites</h2>
+
+    <h3>1.1 Software</h3>
+    <ul>
+        <li><strong>Python</strong>: 3.x (3.8+ recommended)</li>
+        <li><strong>Python packages</strong> (typical set, inferred from code – adjust based on your environment):
+            <ul>
+                <li><code>pandas</code></li>
+                <li><code>influxdb</code> or <code>influxdb-client</code> (depending on <code>influx_reader.py</code>)
+                </li>
+                <li>Any additional packages referenced by your readers or <code>requirements.txt</code></li>
+            </ul>
+        </li>
+    </ul>
+    <p>Install packages, for example:</p>
+    <pre><code>pip install pandas influxdb</code></pre>
+    <p class="note">
+        Or install from your project-specific <code>requirements.txt</code> if available.
+    </p>
+
+    <h3>1.2 External Systems & Data</h3>
+    <ul>
+        <li><strong>InfluxDB</strong>
+            <ul>
+                <li>Running instance reachable from the PerformanceAnalyst machine.</li>
+                <li>Default DB name: <code>macaDB</code> (see <code>config/settings.py</code>).</li>
+                <li>Contains relevant time-series metrics for the analysis time window.</li>
+            </ul>
+        </li>
+        <li><strong>JMeter Results</strong>
+            <ul>
+                <li>Aggregate and summary result files from your JMeter test run.</li>
+                <li>Placed under:
+                    <ul>
+                        <li><code>JMeterResults/aggregate/</code></li>
+                        <li><code>JMeterResults/summary/</code></li>
+                    </ul>
+                </li>
+                <li>Filenames/formats must match expectations in <code>data_sources/jmeter_reader.py</code>.</li>
+            </ul>
+        </li>
+        <li><strong>Other Metrics (Apache, Tomcat, Oracle, OS)</strong>
+            <ul>
+                <li>Metrics available as required by:
+                    <ul>
+                        <li><code>data_sources/apache_reader.py</code></li>
+                        <li><code>data_sources/tomcat_reader.py</code></li>
+                        <li><code>data_sources/oracle_reader.py</code></li>
+                        <li><code>data_sources/os_loader.py</code></li>
+                    </ul>
+                </li>
+                <li>These may read from InfluxDB, logs, or other data stores depending on implementation.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 id="config">2. Configuration</h2>
+
+    <h3>2.1 Global Settings (<code>config/settings.py</code>)</h3>
+    <p>Important configuration values:</p>
+    <ul>
+        <li><strong>InfluxDB Connection</strong>
+            <ul>
+                <li><code>INFLUX_HOST = "localhost"</code></li>
+                <li><code>INFLUX_PORT = 8086</code></li>
+                <li><code>INFLUX_USERNAME = "admin"</code></li>
+                <li><code>INFLUX_PASSWORD = "admin"</code></li>
+                <li><code>INFLUX_DB = "macaDB"</code></li>
+            </ul>
+        </li>
+        <li><strong>Time Window</strong>
+            <ul>
+                <li><code>START_TIME = "2026-05-29T08:36:20Z"</code></li>
+                <li><code>END_TIME = "2026-05-29T11:18:52Z"</code></li>
+                <li>Must align with both InfluxDB metrics and JMeter test period.</li>
+            </ul>
+        </li>
+        <li><strong>Thresholds</strong> (partial list):
+            <ul>
+                <li>CPU / Memory:
+                    <ul>
+                        <li><code>CPU_HIGH_THRESHOLD = 85</code></li>
+                        <li><code>MEMORY_HIGH_THRESHOLD = 80</code></li>
+                    </ul>
+                </li>
+                <li>Latency / Error:
+                    <ul>
+                        <li><code>LATENCY_HIGH_THRESHOLD = 1000</code></li>
+                        <li><code>LATENCY_CRITICAL = 1500</code></li>
+                        <li><code>ERROR_RATE_THRESHOLD = 0.05</code></li>
+                        <li><code>ERROR_CRITICAL_THRESHOLD = 0.1</code></li>
+                    </ul>
+                </li>
+                <li>Correlation & anomaly behavior:
+                    <ul>
+                        <li><code>CORRELATION_THRESHOLD</code></li>
+                        <li><code>CPU_RT_CORR_THRESHOLD</code></li>
+                        <li><code>MEMORY_LATENCY_CORR_THRESHOLD</code></li>
+                        <li><code>MIN_SUSTAINED_DURATION</code>, <code>MIN_DURATION</code>,
+                            <code>TREND_THRESHOLD</code>,
+                            <code>ANOMALIES_THRESHOLD</code>
+                        </li>
+                    </ul>
+                </li>
+                <li>Component-specific thresholds:
+                    <ul>
+                        <li>Apache: latency, error rate, worker utilization.</li>
+                        <li>Tomcat: GC time/count, heap usage, threads, DB connections.</li>
+                        <li>Oracle: exec time, wait time, calls, memory.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li><strong>JMeter results path</strong>
+            <ul>
+                <li><code>JMeterResultPath = Path("JMeterResults/aggregate/")</code></li>
+            </ul>
+        </li>
+    </ul>
+    <p class="note">
+        Adjust these values to match your environment (non-localhost InfluxDB, different DB name, different JMeter
+        directories, custom thresholds).
+    </p>
+
+    <h3>2.2 Monitoring Configuration (<code>config/monitoring_config.yaml</code>)</h3>
+    <p>This YAML file is loaded by:</p>
+    <pre><code>config = ConfigManager("config/monitoring_config.yaml")</code></pre>
+    <p>It typically defines:</p>
+    <ul>
+        <li>Which servers/hosts are monitored.</li>
+        <li>Which metrics to pull for each component (CPU, memory, Apache, Tomcat, Oracle, OS).</li>
+        <li>Any per-metric or per-source configuration.</li>
+    </ul>
+    <p>Before running:</p>
+    <ol>
+        <li>Open <code>config/monitoring_config.yaml</code>.</li>
+        <li>Verify hostnames, measurement names, and other settings match your environment.</li>
+        <li>Save your changes.</li>
+    </ol>
+
+    <h2 id="running">3. Running the Application</h2>
+
+    <h3>3.1 From Command Line</h3>
+    <ol>
+        <li><strong>Open a terminal / command prompt.</strong></li>
+        <li><strong>Navigate to the project root:</strong>
+            <pre><code>cd "c:\Nikhil P\SVN\Asset\13_PerformanceAnalyst\PerformanceAnalyst"</code></pre>
+        </li>
+        <li><strong>Activate your Python environment</strong> (if using virtualenv/conda).</li>
+        <li><strong>Run the main script:</strong>
+            <pre><code>python Main.py</code></pre>
+        </li>
+        <li>The application will:
+            <ol>
+                <li>Load configuration from <code>config/monitoring_config.yaml</code> via <code>ConfigManager</code>.
+                </li>
+                <li>Load metrics from configured data sources via <code>dataLoader(config)</code>.</li>
+                <li>Aggregate metrics with <code>aggregate_all(metrics_collection, config)</code>.</li>
+                <li>Perform anomaly and pattern/correlation analysis using
+                    <code>detect_anomalies_and_patterns(aggregated_data)</code>.
+                </li>
+                <li>Run the rule engine (<code>run_rule_engine_with_output</code>) to produce
+                    <code>final_results</code>.</li>
+                <li>Print a short summary to the console via <code>print_short_output(final_results)</code>.</li>
+                <li>Persist detailed outputs and an HTML report via
+                    <code>save_detailed_output(final_results)</code> and
+                    <code>generate_html_report(final_results)</code>.
+                </li>
+            </ol>
+        </li>
+    </ol>
+
+    <h3>3.2 Console Output</h3>
+    <p><code>Main.py</code> calls:</p>
+    <pre><code>print_short_output(final_results)</code></pre>
+    <p>For each flow, this prints:</p>
+    <ul>
+        <li>Major <strong>bottlenecks</strong> (HIGH severity issues).</li>
+        <li><strong>Risks</strong> (MEDIUM severity issues).</li>
+        <li>Top <strong>action items</strong> / recommendations (up to a few items).</li>
+        <li>Overall <strong>confidence</strong> in the analysis, with guidance on interpretation.</li>
+    </ul>
+    <p>Additional, more verbose helper functions defined in <code>Main.py</code>:</p>
+    <ul>
+        <li><code>print_sample_data(metrics_collection, rows=5)</code> – prints sample JMeter and per-server metrics.
+        </li>
+        <li><code>print_actionable_output(final_results)</code> – detailed, flow-centric view with summaries, chains,
+            layer breakdown, evidence, and recommendations.</li>
+    </ul>
+    <p class="note">
+        These helpers are currently commented out in the main block. You can enable them if you want richer CLI output
+        while debugging or exploring data.
+    </p>
+
+    <h2 id="outputs">4. Outputs</h2>
+
+    <h3>4.1 File Outputs</h3>
+    <p>Within <code>Main.py</code>:</p>
+    <pre><code>save_detailed_output(final_results)
+generate_html_report(final_results)</code></pre>
+    <p>These functions, implemented in <code>utils/output_writer.py</code>, will:</p>
+    <ul>
+        <li>Write structured, detailed results (per flow and server) to files under the configured output directory
+            (commonly <code>output/</code>).</li>
+        <li>Generate an HTML summary report that you can open in a browser.</li>
+    </ul>
+    <p>Check the <code>output/</code> directory (or the directory configured in <code>output_writer.py</code>) for:</p>
+    <ul>
+        <li>JSON or similar structured exports.</li>
+        <li>HTML report(s) summarizing analysis, evidence, and recommendations.</li>
+    </ul>
+
+    <h3>4.2 Design / Architecture Documentation</h3>
+    <p>For more detail on how the system works internally, open:</p>
+    <ul>
+        <li><code>Docs/SystemDesign.html</code> – a system design & architecture document covering:
+            <ul>
+                <li>Overall architecture and modules.</li>
+                <li>Data flow and aggregation pipeline.</li>
+                <li>Anomaly detection and correlation.</li>
+                <li>Rule engine behavior and outputs.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 id="checklist">5. Typical Run Checklist</h2>
+
+    <h3>5.1 Before Running</h3>
+    <ul class="checklist">
+        <li>[ ] InfluxDB is running and reachable.</li>
+        <li>[ ] JMeter result files are present in:
+            <ul>
+                <li><code>JMeterResults/aggregate/</code></li>
+                <li><code>JMeterResults/summary/</code></li>
+            </ul>
+        </li>
+        <li>[ ] <code>config/settings.py</code>:
+            <ul>
+                <li>[ ] Influx host/port/DB are correct.</li>
+                <li>[ ] <code>START_TIME</code> / <code>END_TIME</code> match your test window.</li>
+                <li>[ ] Thresholds are reasonable for your environment.</li>
+            </ul>
+        </li>
+        <li>[ ] <code>config/monitoring_config.yaml</code> is aligned with your servers and metric naming.</li>
+        <li>[ ] Python dependencies are installed; the correct environment is active.</li>
+    </ul>
+
+    <h3>5.2 Running & Reviewing Results</h3>
+    <ul class="checklist">
+        <li>[ ] Run <code>python Main.py</code> from the project root.</li>
+        <li>[ ] Review console output for:
+            <ul>
+                <li>Key bottlenecks.</li>
+                <li>Risks.</li>
+                <li>Action items.</li>
+                <li>Confidence level.</li>
+            </ul>
+        </li>
+        <li>[ ] Open generated HTML report(s) and detailed outputs in the <code>output/</code> directory.</li>
+    </ul>
+
+    <h2 id="troubleshooting">6. Troubleshooting</h2>
+
+    <h3>6.1 No Data / Empty Analysis</h3>
+    <ul>
+        <li>Verify <code>START_TIME</code> / <code>END_TIME</code> in <code>config/settings.py</code> overlap with:
+            <ul>
+                <li>The JMeter test execution time.</li>
+                <li>Metric availability in InfluxDB.</li>
+            </ul>
+        </li>
+        <li>Check hostnames and measurement names in:
+            <ul>
+                <li><code>config/monitoring_config.yaml</code></li>
+                <li>Data source readers (e.g., <code>influx_reader.py</code>, <code>apache_reader.py</code>).</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>6.2 InfluxDB Connection Errors</h3>
+    <ul>
+        <li>Confirm host/port/credentials in <code>config/settings.py</code>.</li>
+        <li>Ensure InfluxDB is running and accessible from this machine (network/firewall).</li>
+        <li>Verify the database <code>INFLUX_DB</code> exists and contains metrics.</li>
+    </ul>
+
+    <h3>6.3 JMeter Parsing Issues</h3>
+    <ul>
+        <li>Check that result files are in the expected directories:
+            <ul>
+                <li><code>JMeterResults/aggregate/</code></li>
+                <li><code>JMeterResults/summary/</code></li>
+            </ul>
+        </li>
+        <li>Verify file formats (columns, delimiters) match what <code>jmeter_reader.py</code> expects.</li>
+    </ul>
+
+    <h3>6.4 Missing Apache / Tomcat / DB Metrics</h3>
+    <ul>
+        <li>Review:
+            <ul>
+                <li><code>data_sources/apache_reader.py</code></li>
+                <li><code>data_sources/tomcat_reader.py</code></li>
+                <li><code>data_sources/oracle_reader.py</code></li>
+                <li><code>data_sources/os_loader.py</code></li>
+            </ul>
+            to understand how and where they look for data.
+        </li>
+        <li>Ensure that:
+            <ul>
+                <li>Backing data sources (logs, Influx measurements, etc.) exist.</li>
+                <li>Names (measurements, fields, hostnames) are consistent with configuration.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <p class="note">
+        For a deeper explanation of the analysis logic, refer to <code>Docs/SystemDesign.html</code>.
+    </p>
+</body>
+
+</html>

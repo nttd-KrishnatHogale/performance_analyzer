@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>PerformanceAnalyst - System Design & Architecture</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0 1.5rem 3rem;
+            background: #fafafa;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: #222;
+        }
+
+        h1 {
+            margin-top: 1.5rem;
+        }
+
+        h2 {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 0.25rem;
+            margin-top: 1.75rem;
+        }
+
+        code {
+            font-family: Consolas, monospace;
+            background: #f3f3f3;
+            padding: 0.1rem 0.25rem;
+            border-radius: 3px;
+        }
+
+        pre {
+            background: #f3f3f3;
+            padding: 0.75rem;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 0.15rem 0;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.8rem;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            background: #eee;
+            margin-left: 0.3rem;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.75rem 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 0.4rem 0.5rem;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .diagram {
+            margin: 1rem 0;
+            padding: 0.75rem;
+            background: #f8f8ff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #555;
+        }
+    </style>
+    <!-- Mermaid for diagrams (requires internet when viewing) -->
+    <script type="module">
+        import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+        mermaid.initialize({ startOnLoad: true, theme: "default" });
+    </script>
+</head>
+
+<body>
+    <h1>PerformanceAnalyst - System Design & Architecture</h1>
+    <p>
+        This document describes the architecture and design of the <strong>PerformanceAnalyst</strong> project
+        located at <code>c:\Nikhil P\SVN\Asset\13_PerformanceAnalyst\PerformanceAnalyst</code>. The system
+        performs offline performance analysis by ingesting metrics from multiple sources (JMeter, InfluxDB,
+        Apache, Tomcat, Oracle, OS) and applying aggregation, anomaly detection, correlation, and rule-based
+        evaluation to produce human-readable findings.
+    </p>
+
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><a href="#overview">1. System Overview</a></li>
+            <li><a href="#context">2. Context & External Integrations</a></li>
+            <li><a href="#modules">3. Module & Layered Architecture</a></li>
+            <li><a href="#data-flow">4. Data Flow & Processing Pipeline</a></li>
+            <li><a href="#config">5. Configuration & Thresholds</a></li>
+            <li><a href="#data-model">6. Data & Metric Model</a></li>
+            <li><a href="#anomaly">7. Anomaly Detection & Correlation Design</a></li>
+            <li><a href="#rules">8. Rule Engine & Reporting</a></li>
+            <li><a href="#runtime">9. Runtime View & Execution Model</a></li>
+            <li><a href="#extensibility">10. Extensibility & Design Patterns</a></li>
+            <li><a href="#nonfunctional">11. Non-functional Aspects & Limitations</a></li>
+        </ul>
+    </div>
+
+    <h2 id="overview">1. System Overview</h2>
+    <h3>1.1 Purpose</h3>
+    <p>
+        PerformanceAnalyst is a Python-based analysis engine that correlates load test results with
+        infrastructure and application metrics to identify performance anomalies and likely root causes.
+        It operates primarily as a <strong>batch analysis pipeline</strong> over a defined time window
+        (<code>START_TIME</code>, <code>END_TIME</code>) and produces structured output for human review.
+    </p>
+
+    <h3>1.2 High-level Responsibilities</h3>
+    <ul>
+        <li>Ingest time-series and aggregate data from:
+            <ul>
+                <li>JMeter aggregate/summary result files.</li>
+                <li>InfluxDB database (<code>macaDB</code>) for CPU, memory, and other system metrics.</li>
+                <li>Apache, Tomcat, Oracle, OS sources via specialized readers.</li>
+            </ul>
+        </li>
+        <li>Aggregate and normalize metrics per flow (business transaction) and per server.</li>
+        <li>Compute derived KPIs and perform anomaly detection and correlation.</li>
+        <li>Apply a rule engine to detected anomalies/correlations to infer issues and recommendations.</li>
+        <li>Format and write analysis results to disk.</li>
+    </ul>
+
+    <h3>1.3 High-Level Architecture Diagram</h3>
+    <div class="diagram">
+        <div class="mermaid">
+            graph TD
+            subgraph ExternalSystems
+            JMeter["JMeter Results\n(JMeterResults/*)"]
+            Influx["InfluxDB\n(macaDB)"]
+            Apache["Apache Server"]
+            Tomcat["Tomcat Server"]
+            OracleDB["Oracle DB"]
+            OS["OS Metrics"]
+            end
+
+            subgraph PerformanceAnalyst
+            DS["Data Sources\n(data_sources/*)"]
+            AGG["Aggregation Layer\n(aggregation/*)"]
+            PROC["Processing Layer\n(processing/*)"]
+            ANOM["Anomaly Detection\n(anomaly_detection/*)"]
+            RULE["Rule Engine\n(rule_engine/*)"]
+            OUT["Output Writer\n(utils/output_writer.py)"]
+            CFG["Config Manager\n(core/config_manager.py)"]
+            end
+
+            JMeter --> DS
+            Influx --> DS
+            Apache --> DS
+            Tomcat --> DS
+            OracleDB --> DS
+            OS --> DS
+
+            DS --> AGG --> PROC --> ANOM --> RULE --> OUT
+
+            CFG --> DS
+            CFG --> AGG
+            CFG --> PROC
+            CFG --> ANOM
+            CFG --> RULE
+        </div>
+    </div>
+
+    <h2 id="context">2. Context & External Integrations</h2>
+    <h3>2.1 External Systems</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>System</th>
+                <th>Role</th>
+                <th>Interaction</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>InfluxDB (<code>macaDB</code>)</td>
+                <td>Time-series store for infrastructure and application metrics.</td>
+                <td>Read-only queries for metrics in the configured time window.</td>
+            </tr>
+            <tr>
+                <td>JMeter Result Files</td>
+                <td>Provide load test KPIs (latency, error rate, RPS, etc.).</td>
+                <td>Read aggregate and summary files from <code>JMeterResults/</code>.</td>
+            </tr>
+            <tr>
+                <td>Apache HTTP Server</td>
+                <td>Front-end / web tier metrics (latency, errors, worker utilization).</td>
+                <td>Metrics gathered via <code>apache_reader.py</code> (source depends on its implementation: logs,
+                    status endpoint, or Influx).</td>
+            </tr>
+            <tr>
+                <td>Tomcat</td>
+                <td>Application server metrics (GC, heap, threads, DB connections).</td>
+                <td>Metrics gathered via <code>tomcat_reader.py</code>.</td>
+            </tr>
+            <tr>
+                <td>Oracle Database</td>
+                <td>Database performance metrics (exec time, wait time, calls, memory).</td>
+                <td>Metrics gathered via <code>oracle_reader.py</code>.</td>
+            </tr>
+            <tr>
+                <td>OS</td>
+                <td>CPU and memory usage for hosts under test.</td>
+                <td>Loaded via <code>os_loader.py</code> and further processed in <code>cpu_processor.py</code>,
+                    <code>memory_processor.py</code>.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>2.2 External Interfaces</h3>
+    <ul>
+        <li><strong>InfluxDB Interface</strong>
+            <ul>
+                <li>Configured via <code>config/settings.py</code>:
+                    <ul>
+                        <li><code>INFLUX_HOST</code>, <code>INFLUX_PORT</code></li>
+                        <li><code>INFLUX_USERNAME</code>, <code>INFLUX_PASSWORD</code></li>
+                        <li><code>INFLUX_DB</code> (defaults to <code>macaDB</code>)</li>
+                    </ul>
+                </li>
+                <li>Readers (e.g., <code>influx_reader.py</code>) use these settings to connect and query metrics.</li>
+            </ul>
+        </li>
+        <li><strong>File System Interface</strong>
+            <ul>
+                <li>JMeter aggregate results path: <code>JMeterResults/aggregate/</code> (configurable via
+                    <code>JMeterResultPath</code> in <code>settings.py</code>).
+                </li>
+                <li>Summary results under <code>JMeterResults/summary/</code>.</li>
+                <li>Analysis outputs are written under <code>output/</code> by <code>utils/output_writer.py</code>.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 id="modules">3. Module & Layered Architecture</h2>
+    <h3>3.1 Directory Structure (Logical View)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Directory</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>data_sources/</code></td>
+                <td>Connectors/adapters for each data source (InfluxDB, JMeter, Apache, Tomcat, Oracle, OS).</td>
+            </tr>
+            <tr>
+                <td><code>aggregation/</code></td>
+                <td>Builders and aggregators that merge metrics into flow-level and server-level dataframes.</td>
+            </tr>
+            <tr>
+                <td><code>processing/</code></td>
+                <td>Domain-specific processors for CPU, memory, and JMeter metrics.</td>
+            </tr>
+            <tr>
+                <td><code>anomaly_detection/</code></td>
+                <td>Anomaly, pattern, violation, and correlation detection utilities.</td>
+            </tr>
+            <tr>
+                <td><code>rule_engine/</code></td>
+                <td>Rule definitions, rule evaluation, and output formatting.</td>
+            </tr>
+            <tr>
+                <td><code>utils/</code></td>
+                <td>Shared helpers such as output writing.</td>
+            </tr>
+            <tr>
+                <td><code>core/</code></td>
+                <td>Core orchestration utilities such as configuration management.</td>
+            </tr>
+            <tr>
+                <td><code>config/</code></td>
+                <td>Configuration files and settings (YAML + Python constants).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>3.2 Layered Architecture</h3>
+    <div class="diagram">
+        <div class="mermaid">
+            graph LR
+            Ext["External Data Sources"] --> DS["Data Source Adapters<br />(data_sources/*)"]
+            DS --> AGG["Aggregation Layer<br />(aggregation/*)"]
+            AGG --> PROC["Processing Layer<br />(processing/*)"]
+            PROC --> ANOM["Anomaly Detection<br />(anomaly_detection/*)"]
+            ANOM --> RULE["Rule Engine<br />(rule_engine/*)"]
+            RULE --> OUT["Reporting & Output<br />(utils/output_writer.py)"]
+
+            CFG["Config (config/*, core/config_manager.py)"] --> DS
+            CFG --> AGG
+            CFG --> PROC
+            CFG --> ANOM
+            CFG --> RULE
+        </div>
+    </div>
+
+    <h3>3.3 Responsibilities by Layer</h3>
+    <ul>
+        <li><strong>Data Source Layer (<code>data_sources/*</code>)</strong>
+            <ul>
+                <li>Encapsulate all source-specific logic for reading raw metrics.</li>
+                <li>Expose neutral structures (typically pandas DataFrames or equivalent iterable structures).</li>
+            </ul>
+        </li>
+        <li><strong>Aggregation Layer (<code>aggregation/*</code>)</strong>
+            <ul>
+                <li>Combine metrics from multiple sources into coherent, keyed datasets:
+                    <ul>
+                        <li><code>flow_builder.py</code> and <code>server_builder.py</code> organize metrics per flow
+                            and server.</li>
+                        <li><code>aggregator.py</code>, <code>instance_aggregator.py</code>, and
+                            <code>oracle_aggregator.py</code> perform aggregation operations (e.g., grouping, averaging,
+                            percentiles).
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li><strong>Processing Layer (<code>processing/*</code>)</strong>
+            <ul>
+                <li><code>jmeter_processor.py</code>:
+                    <ul>
+                        <li>Processes JMeter aggregate/summary results into standard KPIs (latency, error rate,
+                            throughput/RPS).</li>
+                    </ul>
+                </li>
+                <li><code>cpu_processor.py</code>, <code>memory_processor.py</code>:
+                    <ul>
+                        <li>Normalize and resample CPU/memory metrics, compute derived indicators as needed.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li><strong>Anomaly Detection Layer (<code>anomaly_detection/*</code>)</strong>
+            <ul>
+                <li><code>detector.py</code>:
+                    <ul>
+                        <li>Provides <code>analyze_dataframe(df)</code> and
+                            <code>detect_anomalies_and_patterns(aggregated_data)</code>.
+                        </li>
+                        <li>Delegates to specialized detectors:
+                            <ul>
+                                <li><code>anomaly_utils.detect_anomalies</code></li>
+                                <li><code>pattern_utils.detect_patterns</code></li>
+                                <li><code>violation_utils.detect_violations</code></li>
+                                <li><code>correlation_utils.detect_correlations</code></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>Other modules encode metric constants, resolution, thresholds, and correlation logic.</li>
+            </ul>
+        </li>
+        <li><strong>Rule Engine Layer (<code>rule_engine/*</code>)</strong>
+            <ul>
+                <li><code>rule_definitions.py</code> defines the knowledge base and conditions for issues.</li>
+                <li><code>rule_engine.py</code> evaluates rules over detected anomalies and aggregated metrics.</li>
+                <li><code>output_formatter.py</code> produces human-readable findings (e.g., prioritized issues and
+                    recommendations).</li>
+            </ul>
+        </li>
+        <li><strong>Output & Utilities (<code>utils/*</code>)</strong>
+            <ul>
+                <li><code>output_writer.py</code> handles writing structured results to the filesystem.</li>
+            </ul>
+        </li>
+        <li><strong>Core/Config (<code>core/*</code>, <code>config/*</code>)</strong>
+            <ul>
+                <li><code>config_manager.py</code> loads and exposes configuration (YAML + Python constants).</li>
+                <li><code>settings.py</code> provides static thresholds and default paths.</li>
+                <li><code>monitoring_config.yaml</code> provides data-source and metric-level configuration.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 id="data-flow">4. Data Flow & Processing Pipeline</h2>
+    <h3>4.1 End-to-End Flow</h3>
+    <div class="diagram">
+        <div class="mermaid">
+            sequenceDiagram
+            participant CFG as Config Manager
+            participant DS as Data Sources
+            participant AGG as Aggregation
+            participant PROC as Processing
+            participant ANOM as Anomaly Detector
+            participant RULE as Rule Engine
+            participant OUT as Output Writer
+
+            CFG->>DS: Load data-source configuration & thresholds
+            DS->>AGG: Load raw metrics (JMeter, Influx, Apache, Tomcat, Oracle, OS)
+            AGG->>PROC: Aggregated, keyed data (flows, servers)
+            PROC->>ANOM: Time-series / KPI dataframes
+            ANOM->>RULE: Anomaly & correlation results
+            RULE->>OUT: Issues, violations, recommendations
+            OUT-->>OUT: Write results to output directory
+        </div>
+    </div>
+
+    <h3>4.2 Flow & Server-Level Analysis</h3>
+    <p>
+        The anomaly detection entry point, <code>analyze_dataframe(df)</code> in
+        <code>anomaly_detection/detector.py</code>, operates over a pandas DataFrame representing
+        metrics for a specific entity (flow or server).
+    </p>
+    <pre><code>def analyze_dataframe(df):
+
+    results = {
+        "anomalies": [],
+        "patterns": [],
+        "violations": [],
+        "correlations": []
+    }
+
+    if df is None or df.empty:
+        return results
+
+    # APPLY DETECTORS
+    detect_anomalies(df, results)
+    detect_patterns(df, results)
+    detect_violations(df, results)
+    detect_correlations(df, results)
+
+    return results
+
+def detect_anomalies_and_patterns(aggregated_data):
+
+    analysis_results = {
+        "flows": {},
+        "servers": {}
+    }
+
+    # FLOW LEVEL
+    for flow_id, df in aggregated_data["flows"].items():
+        analysis_results["flows"][flow_id] = analyze_dataframe(df)
+
+    # SERVER LEVEL
+    for server, df in aggregated_data["servers"].items():
+        analysis_results["servers"][server] = analyze_dataframe(df)
+
+    return analysis_results</code></pre>
+    <p>
+        The <code>aggregated_data</code> structure is expected to contain:
+    </p>
+    <ul>
+        <li><code>aggregated_data["flows"]</code>: a mapping of <code>flow_id → DataFrame</code> for
+            each business flow.</li>
+        <li><code>aggregated_data["servers"]</code>: a mapping of <code>server_id → DataFrame</code> for
+            each server or host.</li>
+    </ul>
+    <p>
+        Each DataFrame includes metric columns from multiple sources (e.g., CPU, memory, latency,
+        error rates) aligned over time. The anomaly detection layer enriches the <code>results</code> dict,
+        which is later consumed by the rule engine.
+    </p>
+
+    <h2 id="config">5. Configuration & Thresholds</h2>
+    <h3>5.1 Static Settings</h3>
+    <p>Key configuration values are defined in <code>config/settings.py</code>:</p>
+    <pre><code>from pathlib import Path
+
+# ===== InfluxDB config =====
+INFLUX_HOST = "localhost"
+INFLUX_PORT = 8086
+INFLUX_USERNAME = "admin"
+INFLUX_PASSWORD = "admin"
+INFLUX_DB = "macaDB"
+
+START_TIME = "2026-05-29T08:36:20Z"
+END_TIME = "2026-05-29T11:18:52Z"
+
+# ===== THRESHOLDS =====
+CPU_HIGH_THRESHOLD = 85
+MEMORY_HIGH_THRESHOLD = 80
+LATENCY_HIGH_THRESHOLD = 1000
+ERROR_RATE_THRESHOLD = 0.05
+CORRELATION_THRESHOLD = 0.7
+RPS_HIGH_THRESHOLD = 200
+MIN_SUSTAINED_DURATION = 5
+TREND_THRESHOLD = 0.1
+MIN_DURATION = 3
+ANOMALIES_THRESHOLD = 3
+CPU_RT_CORR_THRESHOLD = 0.7
+MEMORY_LATENCY_CORR_THRESHOLD = 0.7
+LATENCY_CRITICAL = 1500
+ERROR_RATE_THRESHOLD = 0.05   # 5%
+ERROR_CRITICAL_THRESHOLD = 0.1  # 10%
+
+# ===== JMeter Results Path =====
+JMeterResultPath = Path('JMeterResults/aggregate/')
+
+# ===== Apache THRESHOLDS =====
+APACHE_LATENCY_THRESHOLD = 1000
+APACHE_LATENCY_CRITICAL = 1500
+APACHE_ERROR_THRESHOLD = 0.05
+APACHE_WORKER_UTIL_THRESHOLD = 80
+
+# ===== TOMCAT THRESHOLDS =====
+TOMCAT_GC_TIME_THRESHOLD = 500
+TOMCAT_GC_COUNT_THRESHOLD = 10
+TOMCAT_HEAP_USAGE_THRESHOLD = 85
+TOMCAT_THREAD_UTIL_THRESHOLD = 90
+TOMCAT_DB_CONN_THRESHOLD = 80
+
+# ===== ORACLE THRESHOLDS =====
+DB_EXEC_TIME_THRESHOLD = 200  # ms
+DB_WAIT_TIME_THRESHOLD = 100
+DB_CALLS_THRESHOLD = 1000
+DB_MEMORY_THRESHOLD = 80</code></pre>
+
+    <h3>5.2 Time Window Configuration</h3>
+    <ul>
+        <li><code>START_TIME</code>, <code>END_TIME</code> define the analysis interval.</li>
+        <li>Data readers and queries are typically constrained to this window to reduce volume and focus on the test
+            period.</li>
+    </ul>
+
+    <h3>5.3 Thresholds by Domain</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Domain</th>
+                <th>Key Thresholds</th>
+                <th>Usage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CPU</td>
+                <td><code>CPU_HIGH_THRESHOLD = 85</code></td>
+                <td>Triggers CPU saturation anomalies and rule conditions when exceeded.</td>
+            </tr>
+            <tr>
+                <td>Memory</td>
+                <td><code>MEMORY_HIGH_THRESHOLD = 80</code></td>
+                <td>Flags high memory utilization anomalies.</td>
+            </tr>
+            <tr>
+                <td>Latency</td>
+                <td><code>LATENCY_HIGH_THRESHOLD = 1000</code> ms, <code>LATENCY_CRITICAL = 1500</code> ms</td>
+                <td>Used for latency anomaly and critical violation detection.</td>
+            </tr>
+            <tr>
+                <td>Errors</td>
+                <td><code>ERROR_RATE_THRESHOLD = 0.05</code>, <code>ERROR_CRITICAL_THRESHOLD = 0.1</code></td>
+                <td>Defines normal vs elevated vs critical error rates.</td>
+            </tr>
+            <tr>
+                <td>Apache</td>
+                <td>Latency and error thresholds + <code>APACHE_WORKER_UTIL_THRESHOLD = 80</code></td>
+                <td>Drive anomalies for Apache front-end saturation.</td>
+            </tr>
+            <tr>
+                <td>Tomcat</td>
+                <td>GC time/count, heap usage, thread utilization, DB connections thresholds</td>
+                <td>Interpret JVM-level load and GC stress.</td>
+            </tr>
+            <tr>
+                <td>Oracle DB</td>
+                <td>Execution time, wait time, call count, memory thresholds</td>
+                <td>Identify database bottlenecks and resource pressure.</td>
+            </tr>
+            <tr>
+                <td>Correlation</td>
+                <td><code>CORRELATION_THRESHOLD</code>, <code>CPU_RT_CORR_THRESHOLD</code>,
+                    <code>MEMORY_LATENCY_CORR_THRESHOLD</code>
+                </td>
+                <td>Used to decide if correlations are strong enough to support causality hypotheses.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>5.4 Tuning Strategy</h3>
+    <ul>
+        <li>Most threshold changes are done by editing <code>config/settings.py</code>.</li>
+        <li>For new metrics or more complex behaviour, configuration may be extended in
+            <code>monitoring_config.yaml</code> and associated resolvers.
+        </li>
+        <li>Thresholds are static at runtime; there is no dynamic adaptation in this design.</li>
+    </ul>
+
+    <h2 id="data-model">6. Data & Metric Model</h2>
+    <h3>6.1 Metric Taxonomy</h3>
+    <p>
+        Metrics are defined and organized in <code>anomaly_detection/metric_constants.py</code> and are
+        resolved by <code>metric_resolver.py</code>. While the exact enum/list is in those files, the main
+        categories include:
+    </p>
+    <ul>
+        <li><strong>JMeter KPIs</strong>: latency (avg, p95, p99), error rate, RPS/throughput, response time.</li>
+        <li><strong>CPU Metrics</strong>: CPU utilization per server / per core.</li>
+        <li><strong>Memory Metrics</strong>: memory utilization, possibly swap usage.</li>
+        <li><strong>Apache Metrics</strong>: worker utilization, request rates, error rates, response times.</li>
+        <li><strong>Tomcat Metrics</strong>: GC time, GC count, heap usage, thread pool utilisation, DB connection pool
+            usage.</li>
+        <li><strong>Oracle Metrics</strong>: exec time, wait time, call count, memory usage.</li>
+    </ul>
+
+    <h3>6.2 Internal Data Structures</h3>
+    <ul>
+        <li><strong>Aggregated Data</strong>:
+            <ul>
+                <li><code>aggregated_data["flows"]</code>: map of flow IDs to DataFrames containing JMeter + infra
+                    metrics for each flow.</li>
+                <li><code>aggregated_data["servers"]</code>: map of server IDs to DataFrames containing infra metrics
+                    per server.</li>
+            </ul>
+        </li>
+        <li><strong>Anomaly Detection Results</strong> (per flow or server):
+            <ul>
+                <li><code>results["anomalies"]</code>: list of anomaly records (metric, time range, severity, details).
+                </li>
+                <li><code>results["patterns"]</code>: detected trends or patterns (e.g., steadily increasing latency).
+                </li>
+                <li><code>results["violations"]</code>: threshold violations and constraint breaches.</li>
+                <li><code>results["correlations"]</code>: strong statistical correlations between metrics.</li>
+            </ul>
+        </li>
+        <li><strong>Rule Engine Inputs</strong>:
+            <ul>
+                <li>Analysis results from anomaly detection (by flow and by server).</li>
+                <li>Aggregated metrics (e.g., global KPI summaries from processors).</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>6.3 Mapping External Fields to Internal Metrics</h3>
+    <p>
+        Each reader module maps source-specific fields to internal metric identifiers defined in
+        <code>metric_constants.py</code>. For example:
+    </p>
+    <ul>
+        <li><code>jmeter_reader.py</code> maps JMeter result columns (e.g., <code>avg</code>, <code>error%</code>,
+            <code>throughput</code>) to internal KPIs.
+        </li>
+        <li><code>influx_reader.py</code> maps InfluxDB measurement names/fields (e.g., <code>cpu_usage</code>) to CPU
+            metrics.</li>
+        <li><code>apache_reader.py</code>, <code>tomcat_reader.py</code>, <code>oracle_reader.py</code> perform similar
+            mappings for their domains.</li>
+    </ul>
+
+    <h2 id="anomaly">7. Anomaly Detection & Correlation Design</h2>
+    <h3>7.1 Anomaly Detection Workflow</h3>
+    <ol>
+        <li>Input DataFrame per flow/server contains time-indexed metric columns.</li>
+        <li><code>detect_anomalies(df, results)</code>:
+            <ul>
+                <li>Checks numeric metrics against thresholds (e.g., CPU > 85%, latency > 1000ms).</li>
+                <li>Applies duration criteria (<code>MIN_DURATION</code>, <code>MIN_SUSTAINED_DURATION</code>).</li>
+                <li>May incorporate trend detection (<code>TREND_THRESHOLD</code>).</li>
+            </ul>
+        </li>
+        <li><code>detect_patterns(df, results)</code>:
+            <ul>
+                <li>Identifies temporal patterns (e.g., steadily increasing metric, oscillations).</li>
+            </ul>
+        </li>
+        <li><code>detect_violations(df, results)</code>:
+            <ul>
+                <li>Marks constraint violations (e.g., critical latency, high error rates, GC spikes).</li>
+            </ul>
+        </li>
+        <li><code>detect_correlations(df, results)</code>:
+            <ul>
+                <li>Computes correlations between metric pairs using thresholds (e.g.,
+                    <code>CPU_RT_CORR_THRESHOLD</code>).
+                </li>
+                <li>Example: high positive correlation between CPU utilization and response time.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>7.2 Correlation Model</h3>
+    <ul>
+        <li>Selects metric pairs based on configuration or hard-coded pairs (e.g., CPU vs latency, memory vs latency).
+        </li>
+        <li>Computes correlation coefficients over overlapping time windows.</li>
+        <li>Uses thresholds like <code>CORRELATION_THRESHOLD</code>, <code>CPU_RT_CORR_THRESHOLD</code>,
+            <code>MEMORY_LATENCY_CORR_THRESHOLD</code> to decide significance.
+        </li>
+        <li>Correlations are recorded in <code>results["correlations"]</code>, including metric pair, coefficient,
+            and time range.</li>
+    </ul>
+
+    <h3>7.3 Multi-Level Analysis</h3>
+    <p>
+        The system deliberately analyses metrics at two logical levels:
+    </p>
+    <ul>
+        <li><strong>Flow level</strong>: KPIs and metrics aggregated per flow (business transaction) to answer
+            "which flows are impacted?".</li>
+        <li><strong>Server level</strong>: metrics aggregated per server to answer "which nodes or tiers
+            are the bottleneck?".</li>
+    </ul>
+
+    <h2 id="rules">8. Rule Engine & Reporting</h2>
+    <h3>8.1 Rule Definitions</h3>
+    <p>
+        The rule engine resides under <code>rule_engine/</code>:
+    </p>
+    <ul>
+        <li><code>rule_definitions.py</code> defines individual rules, each representing a performance diagnosis
+            pattern (e.g., CPU-bound latency, DB bottleneck, GC-related slowdowns).</li>
+        <li>Rules typically reference:
+            <ul>
+                <li>One or more anomalies or violations (by metric type, severity, and duration).</li>
+                <li>Correlation evidence (e.g., CPU-latency correlation being high).</li>
+                <li>Threshold breaches (e.g., Apache worker utilization > 80%).</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>8.2 Rule Evaluation</h3>
+    <ul>
+        <li><code>rule_engine.py</code> orchestrates evaluation:
+            <ul>
+                <li>Iterates through flows and servers.</li>
+                <li>Applies rules in a defined sequence or grouping.</li>
+                <li>Collects results as structured findings (e.g., issue type, affected flows/servers, severity).</li>
+            </ul>
+        </li>
+        <li>Some rules may combine evidence from different tiers, for example:
+            <ul>
+                <li>High latency in JMeter flows + high CPU on app servers + strong correlation = CPU bottleneck
+                    diagnosis.</li>
+                <li>High DB wait time + high DB exec time anomalies = database contention.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>8.3 Output Formatting</h3>
+    <ul>
+        <li><code>output_formatter.py</code> maps raw rule results into user-friendly messages and sections.</li>
+        <li><code>utils/output_writer.py</code> handles writing these formatted outputs to the <code>output/</code>
+            directory.</li>
+        <li>Outputs typically include:
+            <ul>
+                <li>Summary of detected high-level issues.</li>
+                <li>Per-flow and per-server findings.</li>
+                <li>Supporting details (metrics, anomalies, evidence, correlations).</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 id="runtime">9. Runtime View & Execution Model</h2>
+    <h3>9.1 Execution Model</h3>
+    <ul>
+        <li>The system is designed as a <strong>batch analysis pipeline</strong>:
+            <ul>
+                <li>The time window is defined up front (<code>START_TIME</code>, <code>END_TIME</code>).</li>
+                <li>All necessary data is loaded and processed for this interval.</li>
+                <li>Results are written to disk at the end of the run.</li>
+            </ul>
+        </li>
+        <li>Entry-point script (not shown in excerpt) usually:
+            <ul>
+                <li>Initializes the configuration manager.</li>
+                <li>Triggers data loading in <code>data_sources/</code>.</li>
+                <li>Invokes aggregators, processors, anomaly detection, and rule engine in sequence.</li>
+                <li>Hands final results to <code>output_writer</code>.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>9.4 Deployment Assumptions</h3>
+    <ul>
+        <li>Python environment with necessary dependencies (pandas, Influx client, etc.).</li>
+        <li><code>INFLUX_HOST</code> is reachable and <code>INFLUX_DB</code> contains the relevant metrics.</li>
+        <li>JMeter result files are pre-generated and placed in <code>JMeterResults/</code> with expected naming
+            conventions.</li>
+        <li>Apache/Tomcat/Oracle/OS metrics availability depends on the configuration and readers.</li>
+    </ul>
+
+    <h2 id="extensibility">10. Extensibility & Design Patterns</h2>
+    <h3>10.1 Patterns in Use</h3>
+    <ul>
+        <li><strong>Adapter Pattern</strong>:
+            <ul>
+                <li>Each reader in <code>data_sources/</code> adapts an external system or file format into a common
+                    internal representation.</li>
+            </ul>
+        </li>
+        <li><strong>Builder/Aggregator Pattern</strong>:
+            <ul>
+                <li><code>flow_builder.py</code> and <code>server_builder.py</code> orchestrate which sources feed which
+                    aggregated datasets.</li>
+                <li><code>aggregator.py</code> encapsulates aggregation logic.</li>
+            </ul>
+        </li>
+        <li><strong>Layered Architecture</strong>:
+            <ul>
+                <li>Clear separation between data ingestion, aggregation, processing, anomaly detection, and rule
+                    evaluation.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>10.2 Adding a New Data Source</h3>
+    <ol>
+        <li>Create a new reader module under <code>data_sources/</code> that:
+            <ul>
+                <li>Connects to or reads from the new source.</li>
+                <li>Maps raw fields to internal metrics via <code>metric_constants.py</code> and
+                    <code>metric_resolver.py</code>.
+                </li>
+                <li>Outputs DataFrames keyed by time and entity (flow/server).</li>
+            </ul>
+        </li>
+        <li>Update aggregation builders (<code>flow_builder.py</code>, <code>server_builder.py</code>) to incorporate
+            the new metrics.</li>
+        <li>Update anomaly detection (if necessary) to handle the new metrics.</li>
+        <li>Optionally add new rules in <code>rule_definitions.py</code> that leverage the new metrics.</li>
+    </ol>
+
+    <h3>10.3 Adding a New Anomaly or Rule</h3>
+    <ul>
+        <li><strong>Anomaly</strong>:
+            <ul>
+                <li>Define the new metric or pattern in <code>metric_constants.py</code>.</li>
+                <li>Extend <code>anomaly_utils.py</code> or <code>pattern_utils.py</code> to implement detection logic.
+                </li>
+                <li>Update thresholds in <code>settings.py</code> or configuration as needed.</li>
+            </ul>
+        </li>
+        <li><strong>Rule</strong>:
+            <ul>
+                <li>Add a new rule to <code>rule_definitions.py</code> that composes anomalies, patterns, and
+                    correlations.</li>
+                <li>Ensure <code>rule_engine.py</code> invokes the rule and that <code>output_formatter.py</code>
+                    formats its output.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 id="nonfunctional">11. Non-functional Aspects & Limitations</h2>
+    <h3>11.1 Performance</h3>
+    <ul>
+        <li>Uses DataFrames for vectorized operations where possible (depending on implementation of readers and
+            processors).</li>
+        <li>Analysis is bounded by the configured time window, which limits data volume per run.</li>
+        <li>Potential bottlenecks:
+            <ul>
+                <li>Large InfluxDB queries for long windows.</li>
+                <li>Computing correlations across many metric pairs.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>11.2 Reliability & Error Handling</h3>
+    <ul>
+        <li>Defensive checks such as:
+            <ul>
+                <li><code>if df is None or df.empty: return results</code> in <code>analyze_dataframe</code>.</li>
+            </ul>
+        </li>
+        <li>Individual reader failures or missing data will typically manifest as absent metrics for specific
+            flows/servers, rather than total pipeline failure (depending on reader implementations).</li>
+    </ul>
+
+    <h3>11.3 Limitations & Assumptions</h3>
+    <ul>
+        <li>Thresholds are static and may require manual tuning for different environments.</li>
+        <li>Analysis assumes JMeter results and system metrics are aligned in time and refer to the same test period.
+        </li>
+        <li>No explicit real-time / streaming design; the system is intended for post-hoc analysis.</li>
+    </ul>
+
+    <p class="note">
+        This HTML file is self-contained and uses Mermaid (loaded from a CDN) to render diagrams.
+        An internet connection is required when viewing to render the diagrams; without it, the textual
+        Mermaid definitions will remain visible.
+    </p>
+</body>
+
+</html>
