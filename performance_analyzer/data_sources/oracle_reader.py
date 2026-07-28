@@ -5,7 +5,7 @@ import pandas as pd
 class OracleReader:
 
     def __init__(self):
-        config = __import__('config.settings', fromlist=[''])
+        config = __import__('performance_analyzer.config.settings', fromlist=[''])
         self.client = InfluxDBClient(
             host=config.INFLUX_HOST,
             port=config.INFLUX_PORT,

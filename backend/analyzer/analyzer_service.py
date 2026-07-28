@@ -30,7 +30,7 @@ class AnalyzerService:
     ):
 
         logger.info("Starting Performance Analyzer")
-        settings.START_TIME = start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        settings.START_TIME = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
         settings.END_TIME = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
         status_manager.update(
             stage="Performance Analysis",
@@ -65,8 +65,8 @@ class AnalyzerService:
             logger.info("Calling performance_analyzer.Main.run_analysis()")
             run_analysis(
                 config_path="performance_analyzer/config/monitoring_config.yaml",
-                    start_time=start_time,
-                    end_time=end_time
+                    # start_time=start_time,
+                    # end_time=end_time
             )
             # analyzer.run()           
 
@@ -75,22 +75,26 @@ class AnalyzerService:
                 parents=True,
                 exist_ok=True
             )
-
+            generated_html = Path("output") / "flow_1_report.html"
+            # html_report = report_directory / "report.html"
             html_report = report_directory / "report.html"
-            json_report = report_directory / "report.json"
+            # json_report = report_directory / "report.json"
+            import shutil
+            shutil.copy2(generated_html, html_report)
 
+            json_report = ""
             #
             # Temporary placeholder until PerformanceAnalyzer
             # is integrated.
             #
 
-            html_report.write_text(
-                "<html><body><h1>Performance Report</h1></body></html>"
-            )
+            # html_report.write_text(
+            #     "<html><body><h1>Performance Report</h1></body></html>"
+            # )
 
-            json_report.write_text(
-                '{"status":"completed"}'
-            )
+            # json_report.write_text(
+            #     '{"status":"completed"}'
+            # )
 
             TestRunRepository.update_report(
                 run_id=run_id,

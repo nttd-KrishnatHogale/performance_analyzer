@@ -83,10 +83,11 @@ import time
 from datetime import datetime
 
 from backend.database.repository import ExecutionLogRepository, TestRunRepository
-from backend.influx.influx_client import InfluxService
+# from backend.influx.influx_client import InfluxService
 from backend.orchestrator.status_manager import status_manager
-from backend.storage.metric_storage import MetricStorage
+# from backend.storage.metric_storage import MetricStorage
 from backend.utils.logger import Logger
+from backend.analyzer.analyzer_service import AnalyzerService
 
 logger = Logger.get_logger()
 
@@ -105,24 +106,25 @@ class ExecutionMonitor:
         self.run = run
         self.test_run_id = test_run_id
 
-        self.influx = InfluxService()
-        self.storage = MetricStorage()
+        # self.influx = InfluxService()
+        # self.storage = MetricStorage()
 
         if start_time is None:
             start_time = datetime.utcnow()
 
         self.start_time = start_time
-        self.last_poll_time = start_time
+        # self.last_poll_time = start_time
 
         # Add/remove measurements according to your InfluxDB
-        self.measurements = [
-            "cpu",
-            "memory",
-            "disk",
-            "network",
-            "apache",
-            "tomcat"
-        ]
+        # self.measurements = [
+        #     # "cpu",
+        #     # "memory",
+        #     # "disk",
+        #     # "network",
+        #     # "apache",
+        #     # "tomcat"
+        #     "macaDB"
+        # ]
 
     def monitor(self):
 
@@ -161,7 +163,11 @@ class ExecutionMonitor:
             if exit_code is None:
                 logger.info("JMeter is still running.")
             else:
+                final_time = datetime.utcnow()
+
                 logger.info(f"JMeter exited with code {exit_code}")
+                logger.info(f"Finish Time : {final_time}")
+
                 break
             current_time = datetime.utcnow()
 
@@ -169,53 +175,53 @@ class ExecutionMonitor:
 
             status_manager.update(
                 status="Running",
-                stage="Fetching Runtime Metrics",
+                stage="Running JMeter",
                 progress=progress,
-                message=f"Collecting metrics ({current_time.strftime('%H:%M:%S')})"
+                message=f"Executing JMeter Test. ({current_time.strftime('%H:%M:%S')})"
             )
 
             TestRunRepository.update_progress(
                 # self.test_run_id,
                 # progress
                 run_id=self.test_run_id,
-                stage="Fetching Runtime Metrics",
+                stage="Running JMeter",
                 progress=progress,
                 status="Running"
             )
             ExecutionLogRepository.add_log(
-    run_id=self.test_run_id,
-    stage="Runtime Metrics",
-    message=f"Progress updated to {progress}%"
-)
-            # Fetch runtime metrics
-            try:
-
-                for measurement in self.measurements:
-                    logger.info(f"Reading measurement : {measurement}")
-                    rows = self.influx.query(
-                        measurement=measurement,
-                        start_time=self.last_poll_time,
-                        end_time=current_time
-                    )
-
-                    self.storage.append(
-                        measurement,
-                        rows
-                    )
-
-                    # logger.info(
-                    #     f"{measurement}: {len(rows)} rows saved."
-                    # )
-                    logger.info(
-                        f"{measurement}: {len(rows)} rows fetched from InfluxDB."
-                    )
-            except Exception as e:
-
-                logger.exception(
-                    f"Failed to fetch runtime metrics: {e}"
+                    run_id=self.test_run_id,
+                    stage="Running JMeter",
+                    message=f"Progress updated to {progress}%"
                 )
+            # Fetch runtime metrics
+        #     try:
 
-            self.last_poll_time = current_time
+        #         for measurement in self.measurements:
+        #             logger.info(f"Reading measurement : {measurement}")
+        #             rows = self.influx.query(
+        #                 measurement=measurement,
+        #                 start_time=self.last_poll_time,
+        #                 end_time=current_time
+        #             )
+
+        #             self.storage.append(
+        #                 measurement,
+        #                 rows
+        #             )
+
+        #             # logger.info(
+        #             #     f"{measurement}: {len(rows)} rows saved."
+        #             # )
+        #             logger.info(
+        #                 f"{measurement}: {len(rows)} rows fetched from InfluxDB."
+        #             )
+        #     except Exception as e:
+
+        #         logger.exception(
+        #             f"Failed to fetch runtime metrics: {e}"
+        #         )
+
+        #     self.last_poll_time = current_time
 
             logger.info(
                 f"Execution Running ({progress}%)"
@@ -223,35 +229,35 @@ class ExecutionMonitor:
 
             time.sleep(5)
 
-        # Final metric collection
-        logger.info("Collecting final runtime metrics...")
+        # # Final metric collection
+        # logger.info("Collecting final runtime metrics...")
 
-        try:
+        # try:
 
-            final_time = datetime.utcnow()
+        #     final_time = datetime.utcnow()
 
-            for measurement in self.measurements:
+        #     for measurement in self.measurements:
 
-                rows = self.influx.query(
-                    measurement=measurement,
-                    start_time=self.last_poll_time,
-                    end_time=final_time
-                )
+        #         rows = self.influx.query(
+        #             measurement=measurement,
+        #             start_time=self.last_poll_time,
+        #             end_time=final_time
+        #         )
 
-                self.storage.append(
-                    measurement,
-                    rows
-                )
+        #         self.storage.append(
+        #             measurement,
+        #             rows
+        #         )
 
-                logger.info(
-                    f"Final {measurement}: {len(rows)} rows saved."
-                )
+        #         logger.info(
+        #             f"Final {measurement}: {len(rows)} rows saved."
+        #         )
 
-        except Exception as e:
+        # except Exception as e:
 
-            logger.exception(
-                f"Final metric collection failed: {e}"
-            )
+        #     logger.exception(
+        #         f"Final metric collection failed: {e}"
+        #     )
 
         # -----------------------------
         # Phase 3
@@ -265,34 +271,64 @@ class ExecutionMonitor:
         # )
         #
         # -----------------------------
-        from backend.analyzer.analyzer_service import AnalyzerService
-        logger.info(
-            "Starting Performance Analyzer..."
-        )
-        logger.info("========== PERFORMANCE ANALYZER STARTED ==========")
-        final_time = datetime.utcnow()
 
-        logger.info(f"Start Time : {self.start_time}")
-        logger.info(f"End Time   : {final_time}")
-        AnalyzerService().run(
-            
-            run_id=self.test_run_id,
-            jtl_file=self.run.jtl_file,
-            runtime_directory="reports/runtime",
-            start_time=self.start_time,
-            end_time=final_time
-        )
-        logger.info("Performance Analyzer Finished.")
-        status_manager.complete()
 
-        TestRunRepository.complete_run(
-            run_id=self.test_run_id,
-            status="Stopped",
-            end_time=datetime.now()
-        )
-        ExecutionManager.clear()
-        logger.info("Execution Monitor Finished Successfully.")
-        return
+        if exit_code != 0:
+
+            logger.error(f"JMeter failed with exit code {exit_code}")
+
+            status_manager.failed()
+
+            TestRunRepository.complete_run(
+                run_id=self.test_run_id,
+                status="Failed",
+                end_time=datetime.now()
+            )
+
+            ExecutionManager.clear()
+
+            return
+        try:
+            logger.info(
+                "Starting Performance Analyzer..."
+            )
+            # logger.info("========== PERFORMANCE ANALYZER STARTED ==========")
+            # final_time = datetime.utcnow()
+
+            logger.info(f"Start Time : {self.start_time}")
+            logger.info(f"End Time   : {final_time}")
+            result = AnalyzerService().run(
+                run_id=self.test_run_id,
+                jtl_file=self.run.jtl_file,
+                runtime_directory="reports/runtime",
+                start_time=self.start_time,
+                end_time=final_time
+            )
+            logger.info("Performance Analyzer Finished.")
+            status_manager.complete()
+            if result["success"]:
+                TestRunRepository.complete_run(
+                    run_id=self.test_run_id,
+                    status="Completed",
+                    end_time=datetime.now(),
+                    html_report=result["html"],
+                    json_report=result["json"]
+                )
+
+            ExecutionManager.clear()
+
+            logger.info("Execution Monitor Finished Successfully.")
+        except Exception:
+        # status_manager.complete()
+            logger.exception("Performance Analyzer failed.")
+            TestRunRepository.complete_run(
+                run_id=self.test_run_id,
+                status="Failed",
+                end_time=datetime.now()
+            )
+            ExecutionManager.clear()
+        # logger.info("Execution Monitor Finished Successfully.")
+            return
 
 
 import threading

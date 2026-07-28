@@ -1,7 +1,7 @@
-from anomaly_detection.anomaly_utils import detect_anomalies
-from anomaly_detection.pattern_utils import detect_patterns
-from anomaly_detection.violation_utils import detect_violations
-from anomaly_detection.correlation_utils import detect_correlations
+from performance_analyzer.anomaly_detection.anomaly_utils import detect_anomalies
+from performance_analyzer.anomaly_detection.pattern_utils import detect_patterns
+from performance_analyzer.anomaly_detection.violation_utils import detect_violations
+from performance_analyzer.anomaly_detection.correlation_utils import detect_correlations
 
 
 def analyze_dataframe(df):

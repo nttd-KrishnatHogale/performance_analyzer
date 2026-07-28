@@ -7,8 +7,8 @@ INFLUX_USERNAME = "admin"
 INFLUX_PASSWORD = "admin"
 INFLUX_DB = "macaDB"
 
-START_TIME = "2026-05-29T08:36:20Z"
-END_TIME = "2026-05-29T11:18:52Z"
+# START_TIME = "2026-05-29T08:36:20Z"
+# END_TIME = "2026-05-29T11:18:52Z"
 
 # ===== THRESHOLDS =====
 CPU_HIGH_THRESHOLD = 85
@@ -28,7 +28,7 @@ ERROR_RATE_THRESHOLD = 0.05   # 5%
 ERROR_CRITICAL_THRESHOLD = 0.1  # 10%
 
 # ===== JMeter Results Path =====
-JMeterResultPath = Path('JMeterResults/aggregate/')
+JMeterResultPath = Path('performance_analyzer/JMeterResults/aggregate/')
 
 # ===== Apache THRESHOLDS =====
 

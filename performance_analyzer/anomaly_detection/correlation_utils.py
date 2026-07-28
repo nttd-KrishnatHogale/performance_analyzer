@@ -1,5 +1,5 @@
-from anomaly_detection.metric_resolver import get_metric_columns
-from anomaly_detection.metric_constants import *
+from performance_analyzer.anomaly_detection.metric_resolver import get_metric_columns
+from performance_analyzer.anomaly_detection.metric_constants import *
 
 
 # ============================================================

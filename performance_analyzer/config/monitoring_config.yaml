@@ -1,7 +1,7 @@
 servers:
-  - hostname: ip-10-31-1-39.ap-south-1.compute.internal
+  - hostname: ip-10-31-4-84.ap-south-1.compute.internal
     apache:
-      - instance: ip-10-31-1-39.ap-south-1.compute.internal_80
+      - instance: ip-10-31-4-84.ap-south-1.compute.internal
     tomcat:
       - instance: 1111
     oracle:
@@ -11,11 +11,11 @@ servers:
 architecture:
   - flow_id: flow_1
     web:
-      hostname: ip-10-31-1-39.ap-south-1.compute.internal
-      instance: ip-10-31-1-39.ap-south-1.compute.internal_80
+      hostname: ip-10-31-4-84.ap-south-1.compute.internal
+      instance: ip-10-31-4-84.ap-south-1.compute.internal_80
     app:
-      hostname: ip-10-31-1-39.ap-south-1.compute.internal
+      hostname: ip-10-31-4-84.ap-south-1.compute.internal
       instance: 1111
     db:
-      hostname: ip-10-31-1-39.ap-south-1.compute.internal
+      hostname: ip-10-31-4-84.ap-south-1.compute.internal
       sid: localhost:1521/xe

@@ -1,5 +1,5 @@
 import pandas as pd
-from aggregation.merge_utils import merge_dataframes
+from performance_analyzer.aggregation.merge_utils import merge_dataframes
 
 
 def aggregate_oracle_instance(db_data):

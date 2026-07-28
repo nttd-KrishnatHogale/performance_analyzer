@@ -1,5 +1,5 @@
-from rule_engine.rule_definitions import evaluate_rules
-from rule_engine.output_formatter import build_actionable_output
+from performance_analyzer.rule_engine.rule_definitions import evaluate_rules
+from performance_analyzer.rule_engine.output_formatter import build_actionable_output
 
 def rank_insights(insights):
 

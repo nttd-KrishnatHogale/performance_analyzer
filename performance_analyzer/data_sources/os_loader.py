@@ -1,7 +1,7 @@
 from influxdb import InfluxDBClient
-from data_sources.influx_reader import InfluxReader
-from processing.cpu_processor import process_cpu
-from processing.memory_processor import process_memory
+from performance_analyzer.data_sources.influx_reader import InfluxReader
+from performance_analyzer.processing.cpu_processor import process_cpu
+from performance_analyzer.processing.memory_processor import process_memory
 
 class OSReader:
     

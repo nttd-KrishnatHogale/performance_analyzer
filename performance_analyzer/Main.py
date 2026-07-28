@@ -1,9 +1,11 @@
-from core.config_manager import ConfigManager
-from data_sources.data_loader import dataLoader
-from aggregation.aggregator import aggregate_all
-from anomaly_detection.detector import detect_anomalies_and_patterns
-from rule_engine.rule_engine import run_rule_engine_with_output
-from utils.output_writer import save_detailed_output, generate_html_report
+# from core.config_manager import ConfigManager
+from performance_analyzer.core.config_manager import ConfigManager
+from performance_analyzer.data_sources.data_loader import dataLoader
+# from data_sources.data_loader import dataLoader
+from performance_analyzer.aggregation.aggregator import aggregate_all
+from performance_analyzer.anomaly_detection.detector import detect_anomalies_and_patterns
+from performance_analyzer.rule_engine.rule_engine import run_rule_engine_with_output
+from performance_analyzer.utils.output_writer import save_detailed_output, generate_html_report
 import json
 from backend.utils.logger import Logger
 

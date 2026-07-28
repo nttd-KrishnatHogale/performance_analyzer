@@ -1,5 +1,5 @@
-from anomaly_detection.metric_resolver import get_metric_columns
-from anomaly_detection.metric_constants import CPU_USAGE
+from performance_analyzer.anomaly_detection.metric_resolver import get_metric_columns
+from performance_analyzer.anomaly_detection.metric_constants import CPU_USAGE
 import numpy as np
 
 def detect_patterns(df, results):

@@ -1,6 +1,6 @@
-from aggregation.instance_aggregator import aggregate_instance_df
-from aggregation.oracle_aggregator import aggregate_oracle_instance
-from aggregation.merge_utils import merge_dataframes
+from performance_analyzer.aggregation.instance_aggregator import aggregate_instance_df
+from performance_analyzer.aggregation.oracle_aggregator import aggregate_oracle_instance
+from performance_analyzer.aggregation.merge_utils import merge_dataframes
 
 
 def build_servers(metrics_collection):

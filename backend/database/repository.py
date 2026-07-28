@@ -208,7 +208,32 @@ class TestRunRepository:
             session.close()
 
 
+    @classmethod
+    def update_report(
+        cls,
+        run_id: int,
+        html_report: str = "",
+        json_report: str = ""
+    ):
+        session = cls._get_session()
 
+        try:
+            test_run = session.get(TestRun, run_id)
+
+            if not test_run:
+                return
+
+            test_run.html_report = html_report
+            test_run.json_report = json_report
+
+            session.commit()
+
+        except SQLAlchemyError:
+            session.rollback()
+            raise
+
+        finally:
+            session.close()
 
     @staticmethod
     def get_test_run(run_id: int) -> Optional[TestRun]:

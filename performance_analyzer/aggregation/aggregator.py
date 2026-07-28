@@ -1,5 +1,5 @@
-from aggregation.flow_builder import build_flows
-from aggregation.server_builder import build_servers
+from performance_analyzer.aggregation.flow_builder import build_flows
+from performance_analyzer.aggregation.server_builder import build_servers
 
 
 def aggregate_all(metrics_collection, config):

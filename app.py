@@ -452,7 +452,7 @@ if refresh:
 # Auto refresh every 5 seconds
 if (
     st.session_state.auto_refresh
-    # and status["status"] == "Running"
+    and status["status"] == "Running"
 ):
 
     time.sleep(5)
@@ -460,13 +460,31 @@ if (
     st.session_state.last_refresh = datetime.now()
 
     st.rerun()
-run = TestRunRepository.get_test_run(
-    st.session_state.current_run_id
-)
+# run = TestRunRepository.get_test_run(
+#     st.session_state.current_run_id
+# )
 
-st.metric("Status", run.status)
-st.metric("Stage", run.stage)
-st.metric("Progress", f"{run.progress}%")
+# st.metric("Status", run.status)
+# st.metric("Stage", run.stage)
+# st.metric("Progress", f"{run.progress}%")
+
+if st.session_state.current_run_id is not None:
+    logger.info(
+        f"Current Run ID: {st.session_state.current_run_id}"
+    )
+    run = TestRunRepository.get_test_run(
+        st.session_state.current_run_id
+    )
+
+    if run is not None:
+        st.metric("Status", run.status)
+        st.metric("Stage", run.stage)
+        st.metric("Progress", f"{run.progress}%")
+    else:
+        st.warning("Current test run not found in the database.")
+    logger.info(f"Database returned: {run}")
+else:
+    st.info("No active test run.")
 
 # ---------------------------------------------------------
 # Execution Logs

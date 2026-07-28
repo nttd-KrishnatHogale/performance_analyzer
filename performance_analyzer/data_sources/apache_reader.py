@@ -1,6 +1,6 @@
 from influxdb import InfluxDBClient
 import pandas as pd
-from config import settings
+from performance_analyzer.config import settings
 
 
 class ApacheReader:

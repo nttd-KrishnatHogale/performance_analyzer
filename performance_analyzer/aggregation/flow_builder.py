@@ -1,6 +1,6 @@
-from aggregation.instance_aggregator import aggregate_instance_df
-from aggregation.oracle_aggregator import aggregate_oracle_instance
-from aggregation.merge_utils import merge_dataframes
+from performance_analyzer.aggregation.instance_aggregator import aggregate_instance_df
+from performance_analyzer.aggregation.oracle_aggregator import aggregate_oracle_instance
+from performance_analyzer.aggregation.merge_utils import merge_dataframes
 
 
 def build_flows(metrics_collection, config):
@@ -28,6 +28,14 @@ def build_flows(metrics_collection, config):
         db_h = flow["db"]["hostname"]
         db_sid = flow["db"]["sid"]
 
+        print("=" * 80)
+        print("Servers in metrics_collection:")
+        print(metrics_collection["servers"].keys())
+
+        print("Web Host :", web_h)
+        print("App Host :", app_h)
+        print("DB Host  :", db_h)
+        print("=" * 80)
         server_data_web = metrics_collection["servers"][web_h]
         server_data_app = metrics_collection["servers"][app_h]
         server_data_db = metrics_collection["servers"][db_h]

@@ -1,17 +1,19 @@
-from data_sources.influx_reader import InfluxReader
-from data_sources.jmeter_reader import load_jmeter_files
-from data_sources.apache_reader import ApacheReader
-from data_sources.tomcat_reader import TomcatReader
-from data_sources.oracle_reader import OracleReader
-from data_sources.os_loader import OSReader
+# from data_sources.influx_reader import InfluxReader
+# from performance_analyzer.data_sources.data_loader import dataLoader
+from performance_analyzer.data_sources.influx_reader import InfluxReader
+from performance_analyzer.data_sources.jmeter_reader import load_jmeter_files
+from performance_analyzer.data_sources.apache_reader import ApacheReader
+from performance_analyzer.data_sources.tomcat_reader import TomcatReader
+from performance_analyzer.data_sources.oracle_reader import OracleReader
+from performance_analyzer.data_sources.os_loader import OSReader
 
-from processing.cpu_processor import process_cpu
-from processing.memory_processor import process_memory
-from processing.jmeter_processor import process_jmeter
+from performance_analyzer.processing.cpu_processor import process_cpu
+from performance_analyzer.processing.memory_processor import process_memory
+from performance_analyzer.processing.jmeter_processor import process_jmeter
 from backend.utils.logger import Logger
 
 logger = Logger.get_logger()
-from config import settings
+from performance_analyzer.config import settings
 
 
 def merge_dataframes(df_list):
