@@ -47,12 +47,7 @@ class TestOrchestrator:
 
             raise
 
-            # monitor = ExecutionMonitor(
-            #     process=process,
-            #     run=result,
-            #     test_run_id=run.id
-            # )
-            # start_time = datetime.utcnow()
+
         from backend.monitoring.execution_monitor import ExecutionManager
 
         ExecutionManager.register(

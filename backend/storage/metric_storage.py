@@ -13,53 +13,7 @@ from backend.utils.logger import Logger
 
 logger = Logger.get_logger()
 
-# class MetricStorage:
 
-#     def __init__(self):
-#         config = ConfigService()
-
-
-#         # self.folder = Path("reports/runtime")
-#         self.output_directory = config.get(
-#             "runtime.save_directory",
-#             "reports/runtime"
-#         )
-
-#         # self.folder.mkdir(
-#         #     parents=True,
-#         #     exist_ok=True
-#         # )
-#         self.output_directory = Path(self.output_directory)
-
-#         self.output_directory.mkdir(
-#             parents=True,
-#             exist_ok=True
-#         )
-
-#     def append(self, measurement, rows):
-
-#         if not rows:
-#             return
-
-#         file = self.folder / f"{measurement}.csv"
-
-#         df = pd.DataFrame(rows)
-
-#         if file.exists():
-
-#             df.to_csv(
-#                 file,
-#                 mode="a",
-#                 header=False,
-#                 index=False
-#             )
-
-#         else:
-
-#             df.to_csv(
-#                 file,
-#                 index=False
-#             )
 
 class MetricStorage:
 

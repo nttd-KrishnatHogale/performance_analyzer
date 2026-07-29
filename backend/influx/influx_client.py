@@ -24,34 +24,6 @@ class InfluxService:
     def ping(self):
 
         return self.client.ping()
-
-#     def query(self, measurement, start_time, end_time):
-
-#         query = f"""
-#         SELECT *
-#         FROM "{measurement}"
-#         WHERE time >= '{start_time}'
-#         AND time <= '{end_time}'
-#         """
-#         logger.info("=" * 60)
-#         logger.info(f"Measurement : {measurement}")
-#         logger.info(f"Start Time  : {start_time}")
-#         logger.info(f"End Time    : {end_time}")
-#         logger.info(query)
-#         logger.info("=" * 60)
-#         logger.info(
-#     f"Querying InfluxDB Measurement : {measurement}"
-# )
-#         logger.info(query)
-
-#         result = self.client.query(query)
-#         logger.info(
-#     f"InfluxDB Query Successful : {measurement}"
-# )
-#         rows = list(result.get_points())
-
-#         logger.info(f"{measurement} -> {len(rows)} rows fetched")
-#         return list(result.get_points(measurement=measurement))
     def query(self, measurement, start_time, end_time):
 
         query = f"""

@@ -1,59 +1,3 @@
-# import streamlit as st
-
-# from config.config_service import ConfigService
-
-# from backend.utils.logger import Logger
-
-# logger = Logger.get_logger()
-
-# config = ConfigService()
-
-
-# st.set_page_config(
-
-#     page_title=config.get("application.name"),
-
-#     layout="wide"
-
-# )
-
-# logger.info("Dashboard Opened")
-
-# st.title(config.get("application.name"))
-
-# st.write("Version :", config.get("application.version"))
-
-# st.divider()
-
-# st.subheader("Configuration")
-
-# st.write("Influx Host :", config.get("influxdb.host"))
-
-# st.write("Database :", config.get("influxdb.database"))
-
-# st.write("Linux Host :", config.get("linux.host"))
-
-# st.divider()
-
-# if st.button("Run Performance Test"):
-
-#     logger.info("Run Button Clicked")
-
-#     st.success("Runner will be connected in Sprint 2.")
-
-# from backend.orchestrator.status_manager import status_manager
-
-# status = status_manager.get_status()
-
-# st.progress(status["progress"] / 100)
-
-# st.write(f"**Status:** {status['status']}")
-
-# st.write(f"**Stage:** {status['stage']}")
-
-# st.write(f"**Message:** {status['message']}")
-
-
 """
 app.py
 
@@ -68,7 +12,6 @@ from backend.jmeter.runner import JMeterRunner
 from config.config_service import ConfigService
 from backend.utils.logger import Logger
 from backend.orchestrator.status_manager import status_manager
-# from database.repository import TestRunRepository
 from backend.database.repository import (
     TestRunRepository,
     ExecutionLogRepository,
@@ -90,18 +33,7 @@ st.set_page_config(
 )
 
 
-# runner = JMeterRunner()
 
-# result = runner.execute(
-#     run_name="100Users",
-#     timeout=1800
-# )
-
-# if result.success:
-#     print("Execution Successful")
-#     print(result.jtl_file)
-# else:
-#     print(result.error_message)
 
 
 logger.info("Dashboard loaded")
@@ -304,10 +236,7 @@ with col1:
 
         logger.info("Run button clicked")
 
-        # run = TestRunRepository.create_test_run(
-        #     run_name=f"Load Test {datetime.now():%Y%m%d_%H%M%S}",
-        #     start_time=datetime.now(),
-        # )
+     
         run_id = orchestrator.start_test()
         logger.info(
             f"Performance Test Started (Run ID: {run_id})"
@@ -317,35 +246,7 @@ with col1:
         st.success(
             f"Performance Test Started (Run ID: {run_id})"
         )
-        # status_manager.start(run.id)
-
-        # with st.spinner("Executing JMeter..."):
-            
-            # runner = JMeterRunner()
-            # process, result = runner.start_process()
-            
-            # run_id = orchestrator.start_test()
-
-            # result = runner.execute(
-            #     run_name=run.run_name,
-            #     timeout=1800
-            # )
-        #     st.success(
-        #     f"Execution Started (Run ID {run_id})"
-        # )
-
-        # if result.success:
-        #     st.success("Performance Test Completed")
-        # else:
-        #     st.error(result.error_message)
-
-        # logger.info(
-        #     f"Execution started with Run ID {run.id}"
-        # )
-
-        # st.success(
-        #     f"Performance Test Started (Run ID: {run.id})"
-        # )
+  
 with col2:
 
     if st.button("🛑 Stop Test"):
@@ -377,12 +278,7 @@ st.info(
 # ---------------------------------------------------------
 
 st.header("📊 Live Execution Status")
-# status_manager.update(
-#     stage="Not Started",
-#     progress=0,
-#     message="Idle",
-#     status="READY"
-# )
+
 
 status = status_manager.get_status()
 
@@ -460,13 +356,7 @@ if (
     st.session_state.last_refresh = datetime.now()
 
     st.rerun()
-# run = TestRunRepository.get_test_run(
-#     st.session_state.current_run_id
-# )
 
-# st.metric("Status", run.status)
-# st.metric("Stage", run.stage)
-# st.metric("Progress", f"{run.progress}%")
 
 if st.session_state.current_run_id is not None:
     logger.info(

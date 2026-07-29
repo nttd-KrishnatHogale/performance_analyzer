@@ -63,11 +63,7 @@ class StatusManager:
     message=None,
     status=None):
 
-        # self.stage = stage
 
-        # self.progress = progress
-
-        # self.message = message
         if stage is not None:
             self.stage = stage
 
