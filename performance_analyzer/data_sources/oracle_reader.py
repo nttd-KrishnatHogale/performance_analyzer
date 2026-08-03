@@ -61,5 +61,10 @@ class OracleReader:
         data["shared_pool"] = self.query_df(f"""
             SELECT * FROM "rp_summary"."oracle_sql_shared_pool" {base}
         """)
-
+        # NEW: Load execution plans
+        data["plan"] = self.query_df(f"""
+            SELECT *
+            FROM "rp_summary"."oracle_sql_plan"
+            {base}
+        """)
         return data

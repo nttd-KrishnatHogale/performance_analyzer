@@ -64,7 +64,7 @@ class AnalyzerService:
             # )
             logger.info("Calling performance_analyzer.Main.run_analysis()")
             run_analysis(
-                config_path="performance_analyzer/config/monitoring_config.yaml",
+                config_path="performance_analyzer/config/monitoring_config.yaml",run_id=run_id
                     # start_time=start_time,
                     # end_time=end_time
             )

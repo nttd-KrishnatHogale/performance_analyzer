@@ -1,4 +1,5 @@
 # from core.config_manager import ConfigManager
+from performance_analyzer.config import settings
 from performance_analyzer.core.config_manager import ConfigManager
 from performance_analyzer.data_sources.data_loader import dataLoader
 # from data_sources.data_loader import dataLoader
@@ -8,6 +9,10 @@ from performance_analyzer.rule_engine.rule_engine import run_rule_engine_with_ou
 from performance_analyzer.utils.output_writer import save_detailed_output, generate_html_report
 import json
 from backend.utils.logger import Logger
+
+from performance_analyzer.llm.rca_engine import LLMRCAEngine
+from performance_analyzer.report.report_generator import ReportGenerator
+
 
 logger = Logger.get_logger()
 def print_sample_data(metrics_collection, rows=5):
@@ -200,11 +205,150 @@ def print_short_output(final_results):
 
 
  
-def run_analysis(config_path):
+def run_analysis(config_path,run_id):
 
     config = ConfigManager(config_path)
 
     metrics_collection = dataLoader(config)
+
+
+        # ==========================================================
+    # DEBUG - Print all available metrics and DataFrame columns
+    # ==========================================================
+
+    print("\n" + "=" * 100)
+    print("METRICS COLLECTION")
+    print("=" * 100)
+
+    # JMeter
+    if metrics_collection.get("jmeter") is not None:
+        print("\nJMETER COLUMNS")
+        print(metrics_collection["jmeter"].columns.tolist())
+
+    # Servers
+    for hostname, server in metrics_collection["servers"].items():
+
+        print("\n")
+        print("=" * 80)
+        print(f"HOST : {hostname}")
+        print("=" * 80)
+
+        # CPU
+        cpu = server.get("cpu")
+        if cpu is not None:
+            print("\nCPU Columns")
+            print(cpu.columns.tolist())
+
+        # Memory
+        memory = server.get("memory")
+        if memory is not None:
+            print("\nMemory Columns")
+            print(memory.columns.tolist())
+
+        # Apache
+        # for inst, df in server.get("apache", {}).items():
+
+        #     print(f"\nApache Instance : {inst}")
+        #     print(df.columns.tolist())
+        for inst, df in server.get("apache", {}).items():
+
+            print(f"\nApache Instance : {inst}")
+
+            if df is not None:
+                print(df.columns.tolist())
+            else:
+                print("No Apache Data")
+
+        # Tomcat
+        # for inst, df in server.get("tomcat", {}).items():
+
+        #     print(f"\nTomcat Instance : {inst}")
+        #     print(df.columns.tolist())
+
+        for inst, df in server.get("tomcat", {}).items():
+
+            print(f"\tomcat Instance : {inst}")
+
+            if df is not None:
+                print(df.columns.tolist())
+            else:
+                print("No tomcat Data")
+
+        # Oracle
+        for sid, tables in server.get("oracle", {}).items():
+
+            print(f"\nOracle SID : {sid}")
+
+            for table_name, df in tables.items():
+
+                print(f"Table : {table_name}")
+
+                if df is not None:
+                    print(df.columns.tolist())
+
+    print("=" * 100)
+
+    # ==========================================================
+    from performance_analyzer.timeline.timeline_builder import TimelineBuilder
+    from performance_analyzer.config import settings
+
+    # timeline = TimelineBuilder().build(
+    #     metrics_collection,
+    #     settings
+    # )
+
+    # for event in timeline:
+
+    #     print(event)
+
+    timeline_data = TimelineBuilder().build(
+    metrics_collection,
+    settings
+    )
+
+    timeline = timeline_data["timeline"]
+
+    apache_analysis = timeline_data["apache"]
+
+    tomcat_analysis = timeline_data["tomcat"]
+
+    oracle_analysis = timeline_data["oracle"]
+
+    for event in timeline:
+        print(event)
+
+    from performance_analyzer.apache.apache_analyzer import ApacheAnalyzer
+    from performance_analyzer.tomcat.tomcat_analyzer import TomcatAnalyzer
+    from performance_analyzer.oracle.oracle_analyzer import OracleAnalyzer
+
+    # apache_analysis = ApacheAnalyzer().analyze(metrics_collection)
+
+    # tomcat_analysis = TomcatAnalyzer().analyze(metrics_collection)
+
+    # oracle_analysis = OracleAnalyzer().analyze(metrics_collection)
+    from performance_analyzer.jmeter.jmeter_analyzer import JMeterAnalyzer
+
+    jmeter_analysis = JMeterAnalyzer().analyze(
+        metrics_collection["jmeter"]
+    )
+    from performance_analyzer.correlation.correlation_engine import CorrelationEngine
+
+    correlations = CorrelationEngine().analyze(metrics_collection)
+
+    logger.info("=" * 80)
+    logger.info("CORRELATION ENGINE")
+    logger.info("=" * 80)
+
+    for c in correlations:
+
+        logger.info(
+            "%s --> %s | %.2f",
+            c["source"],
+            c["target"],
+            c["confidence"]
+        )
+
+  
 
     aggregated_data = aggregate_all(
         metrics_collection,
@@ -214,10 +358,55 @@ def run_analysis(config_path):
     analysis_results = detect_anomalies_and_patterns(
         aggregated_data
     )
+    # from performance_analyzer.timeline.timeline_builder import TimelineBuilder
+
+    # timeline = TimelineBuilder().build(
+    #     metrics_collection,
+    #     settings
+    # )
 
     final_results = run_rule_engine_with_output(
-        analysis_results
+                analysis_results
+            )
+
+    llm_report = LLMRCAEngine().generate(
+
+        timeline,
+
+        apache_analysis,
+
+        tomcat_analysis,
+
+        oracle_analysis,
+
+        correlations,
+
+        jmeter_analysis
+
     )
+
+    final_results["llm_report"] = llm_report
+
+
+    # ==========================================================
+# Report Generation
+# ==========================================================
+
+    from performance_analyzer.report.report_generator import ReportGenerator
+
+    reports = ReportGenerator().generate(
+
+        run_id,          # <-- see note below
+
+        llm_report,
+
+        timeline,
+
+        correlations
+
+    )
+
+    final_results["reports"] = reports
 
     save_detailed_output(final_results)
 
