@@ -288,6 +288,10 @@ def run_analysis(config_path,run_id):
 
     print("=" * 100)
 
+
+
+
+
     # ==========================================================
     from performance_analyzer.timeline.timeline_builder import TimelineBuilder
     from performance_analyzer.config import settings

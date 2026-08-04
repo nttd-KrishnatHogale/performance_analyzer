@@ -14,8 +14,7 @@ class CorrelationRules:
         
         if cpu.empty:
             return None
-
-     
+ 
 
         # Create thread utilization if it doesn't exist
         if "thread_utilization" not in thread_df.columns:

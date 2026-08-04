@@ -45,16 +45,13 @@ influxdb:
 
 application:
   name: JPetStore
-
-  url: "http://10.31.4.84/jpetstore/"
-
   host: "10.31.4.84"
-
+  url: "http://10.31.4.84/jpetstore/"
   os: linux
 
   ssh:
     username: ec2-user
-    pem_file: "keys/application.pem"
+    pem_file: "C:/KrishnatHOgale/PerformancePlatform/backend/keys/key-for-training.pem"
 
 runtime:
   polling_interval: 30

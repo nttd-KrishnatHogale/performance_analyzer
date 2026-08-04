@@ -32,8 +32,27 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+from backend.ssh.ssh_client import SSHClient
+from backend.configuration.server_configuration_collector import (
+    ServerConfigurationCollector
+)
 
+print("=" * 80)
+print("APP STARTED")
+print("=" * 80)
 
+try:
+    ssh = SSHClient()
+
+    collector = ServerConfigurationCollector(ssh)
+
+    server_config = collector.collect()
+
+    print(server_config)
+
+except Exception as e:
+    print("SERVER CONFIG COLLECTION FAILED")
+    print(e)
 
 
 logger.info("Dashboard loaded")
