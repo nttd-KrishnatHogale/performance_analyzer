@@ -333,7 +333,13 @@ def run_analysis(config_path,run_id):
     )
     from performance_analyzer.correlation.correlation_engine import CorrelationEngine
 
-    correlations = CorrelationEngine().analyze(metrics_collection)
+    # correlations = CorrelationEngine().analyze(metrics_collection)
+    correlations = CorrelationEngine().analyze(
+    metrics_collection,
+    apache_analysis,
+    tomcat_analysis,
+    oracle_analysis
+)
 
     logger.info("=" * 80)
     logger.info("CORRELATION ENGINE")
@@ -423,6 +429,9 @@ if __name__ == "__main__":
     )
     logger.info("Performance Analyzer Completed Successfully")
     print_short_output(results)
+
+
+
     # # read configuration file
     # config = ConfigManager("config/monitoring_config.yaml")
     # #config.print_summary()

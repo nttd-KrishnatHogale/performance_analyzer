@@ -83,7 +83,7 @@ color:green;
 
 <h2>Executive Summary</h2>
 
-<p>{report["summary"]}</p>
+<p>{report.get("summary", "No summary generated")}</p>
 
 </div>
 
@@ -91,7 +91,7 @@ color:green;
 
 <h2>Primary Root Cause</h2>
 
-<p>{report["root_cause"]}</p>
+<p>{report.get("root_cause", "Not available")}</p>
 
 </div>
 
@@ -99,7 +99,7 @@ color:green;
 
 <h2>Confidence</h2>
 
-<h3>{report["confidence"]}</h3>
+<h3>{report.get("confidence", "UNKNOWN")}</h3>
 
 </div>
 
@@ -134,7 +134,7 @@ color:green;
 
 <td>{e.peak_time}</td>
 
-<td>{e.end_time}</td>
+<td>{e.recovery_time}</td>
 
 <td>{e.component}</td>
 
@@ -202,7 +202,7 @@ color:green;
 
 """
 
-        for b in report["bottlenecks"]:
+        for b in report.get("bottlenecks", []):
 
             html += f"<li>{b}</li>"
 
@@ -220,7 +220,7 @@ color:green;
 
 """
 
-        for r in report["recommendations"]:
+        for r in report.get("recommendations", []):
 
             html += f"<li>{r}</li>"
 
@@ -238,7 +238,7 @@ color:green;
 
 """
 
-        html += report["timeline"]
+        html += report.get("timeline", "Timeline not available.")
 
         html += """
 

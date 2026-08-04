@@ -118,8 +118,13 @@ class TimelineBuilder:
                 settings
             )
 
-                apache_results[(hostname, instance)] = apache_analysis
-
+                # apache_results[(hostname, instance)] = apache_analysis
+                apache_results.setdefault(hostname, {})
+                apache_results[hostname][instance] = {
+                    "analysis": apache_analysis,
+                    "modstatus": modstatus_df,
+                    "throughput": throughput_df,
+                }
                 timeline.extend(apache_analysis["timeline"])
 
         # for instance, tomcat in server["tomcat"].items():
@@ -221,7 +226,16 @@ class TimelineBuilder:
                     settings
                 )
 
-                tomcat_results[(hostname, instance)] = analysis
+                # tomcat_results[(hostname, instance)] = analysis
+                tomcat_results.setdefault(hostname, {})
+                # tomcat_results[hostname][instance] = analysis
+                tomcat_results[hostname][instance] = {
+                    "analysis": analysis,
+                    "jvm": jvm_df,
+                    "thread": thread_df,
+                    "datasource": datasource_df,
+                    "session": session_df,
+                }
 
                 timeline.extend(analysis["timeline"])
 
@@ -239,7 +253,13 @@ class TimelineBuilder:
                     settings
                 )
 
-                oracle_results[(hostname, sid)] = oracle_analysis
+                # oracle_results[(hostname, sid)] = oracle_analysis
+                oracle_results.setdefault(hostname, {})
+                # oracle_results[hostname][sid] = oracle_analysis
+                oracle_results[hostname][sid] = {
+                    "analysis": oracle_analysis,
+                    "raw": oracle_data,
+                }
 
                 timeline.extend(oracle_analysis["timeline"])
 
@@ -248,8 +268,8 @@ class TimelineBuilder:
         self.printer.print(timeline)
 
         return {
-    "timeline": timeline,
-    "apache": apache_results,
-    "tomcat": tomcat_results,
-    "oracle": oracle_results,
+            "timeline": timeline,
+            "apache": apache_results,
+            "tomcat": tomcat_results,
+            "oracle": oracle_results,
 }

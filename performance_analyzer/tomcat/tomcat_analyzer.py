@@ -2,6 +2,7 @@ from performance_analyzer.tomcat.tomcat_metrics import TomcatMetrics
 from performance_analyzer.tomcat.tomcat_rules import TomcatFinding
 
 from performance_analyzer.timeline.event_detector import EventDetector
+from dataclasses import asdict
 
 
 class TomcatAnalyzer:
@@ -275,7 +276,8 @@ class TomcatAnalyzer:
         return {
 
             "timeline":timeline,
+            "findings": [asdict(f) for f in findings]
 
-            "findings":findings
+            # "findings":findings
 
         }

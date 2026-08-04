@@ -87,7 +87,9 @@ class LLMClient:
             ],
             response_format={"type": "json_object"},
         )
+        content = response.choices[0].message.content
 
+        print("contentfrom llm client",content)
         return json.loads(
             response.choices[0].message.content
         )

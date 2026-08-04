@@ -2,6 +2,7 @@ from performance_analyzer.oracle.oracle_metrics import OracleMetrics
 from performance_analyzer.oracle.oracle_rules import OracleFinding
 from performance_analyzer.oracle.sql_plan_parser import SQLPlanParser
 
+from dataclasses import asdict
 
 class OracleAnalyzer:
 
@@ -240,15 +241,23 @@ class OracleAnalyzer:
                     )
 
                 )
-
         return {
-
-            "timeline":timeline,
-
-            "findings":findings,
-
-            "top_sql":top_sql,
-
-            "plans":parsed_plans
-
+            "timeline": timeline,
+            "findings": [asdict(f) for f in findings],
+            "top_sql": (
+                top_sql.to_dict(orient="records")
+                if top_sql is not None else []
+            ),
+            "plans": parsed_plans
         }
+        # return {
+
+        #     "timeline":timeline,
+
+        #     "findings":findings,
+
+        #     "top_sql":top_sql,
+
+        #     "plans":parsed_plans
+
+        # }

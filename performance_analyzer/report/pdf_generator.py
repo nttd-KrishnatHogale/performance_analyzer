@@ -14,28 +14,37 @@ class PDFGenerator:
 
         elements.append(Paragraph("<b>Performance RCA Report</b>", styles["Heading1"]))
 
-        elements.append(Paragraph(report["summary"], styles["Normal"]))
+        elements.append(Paragraph(report.get("summary", "No summary generated"), styles["Normal"]))
 
         elements.append(Paragraph("<b>Root Cause</b>", styles["Heading2"]))
 
-        elements.append(Paragraph(report["root_cause"], styles["Normal"]))
+        elements.append(Paragraph(report.get("root_cause", "Not available"), styles["Normal"]))
 
         elements.append(Paragraph("<b>Timeline</b>", styles["Heading2"]))
 
-        elements.append(Paragraph(report["timeline"], styles["Normal"]))
+        elements.append(Paragraph(report.get("timeline", "Not available"), styles["Normal"]))
 
+        # elements.append(Paragraph("<b>Bottlenecks</b>", styles["Heading2"]))
+
+        # for item in report["bottlenecks"]:
+        #     elements.append(
+        #         Paragraph(f"• {item}", styles["Normal"])
+        #     )
+
+        # elements.append(Paragraph("<b>Recommendations</b>", styles["Heading2"]))
+
+        # for item in report["recommendations"]:
+        #     elements.append(
+        #         Paragraph(f"• {item}", styles["Normal"])
+        #     )
         elements.append(Paragraph("<b>Bottlenecks</b>", styles["Heading2"]))
 
-        for item in report["bottlenecks"]:
-            elements.append(
-                Paragraph(f"• {item}", styles["Normal"])
-            )
+        for item in report.get("bottlenecks", []):
+            elements.append(Paragraph(f"• {item}", styles["Normal"]))
 
         elements.append(Paragraph("<b>Recommendations</b>", styles["Heading2"]))
 
-        for item in report["recommendations"]:
-            elements.append(
-                Paragraph(f"• {item}", styles["Normal"])
-            )
+        for item in report.get("recommendations", []):
+            elements.append(Paragraph(f"• {item}", styles["Normal"]))
 
         doc.build(elements)

@@ -3,6 +3,7 @@ from performance_analyzer.apache.apache_rules import ApacheFinding
 
 from performance_analyzer.timeline.event_detector import EventDetector
 
+from dataclasses import asdict
 
 class ApacheAnalyzer:
 
@@ -202,5 +203,7 @@ class ApacheAnalyzer:
 
             "timeline":timeline,
 
-            "findings":findings
+            # "findings":findings
+            "findings": [asdict(f) for f in findings]
+
         }
