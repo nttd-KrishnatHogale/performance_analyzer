@@ -148,6 +148,9 @@ class TimelineBuilder:
         # ------------------------------------
         # Tomcat Analysis
         # ------------------------------------
+            print("\n" + "=" * 80)
+            print("RAW TOMCAT DATA")
+            print("=" * 80)
 
             for instance, tomcat_df in server.get("tomcat", {}).items():
 
@@ -218,6 +221,16 @@ class TimelineBuilder:
                 #         settings
 
                 #     )
+                print("\nInstance:", instance)
+
+                if tomcat_df is None:
+                    print("DataFrame is None")
+                    continue
+
+                print("Rows:", len(tomcat_df))
+                print("Columns:", tomcat_df.columns.tolist())
+                print(tomcat_df.head())
+
                 analysis = self.tomcat_analyzer.analyze(
                     jvm_df,
                     thread_df,
@@ -225,7 +238,8 @@ class TimelineBuilder:
                     session_df,
                     settings
                 )
-
+                print("\nTomcat Analyzer Output")
+                print(analysis)
                 # tomcat_results[(hostname, instance)] = analysis
                 tomcat_results.setdefault(hostname, {})
                 # tomcat_results[hostname][instance] = analysis
@@ -239,6 +253,10 @@ class TimelineBuilder:
 
                 timeline.extend(analysis["timeline"])
 
+                print("\n" + "=" * 80)
+                print("RAW ORACLE DATA")
+                print("=" * 80)
+
             for sid, oracle_data in server["oracle"].items():
 
                 # oracle_analysis = self.oracle_analyzer.analyze(
@@ -248,11 +266,26 @@ class TimelineBuilder:
                 #             settings
 
                 #         )
+
+                print("\nSID:", sid)
+
+                for table, df in oracle_data.items():
+
+                    print("\nTable:", table)
+
+                    if df is None:
+                        print("None")
+                        continue
+
+                    print("Rows:", len(df))
+                    print(df.head())
+                
                 oracle_analysis = self.oracle_analyzer.analyze(
                     oracle_data,
                     settings
                 )
-
+                print("\nOracle Analyzer Output")
+                print(oracle_analysis)
                 # oracle_results[(hostname, sid)] = oracle_analysis
                 oracle_results.setdefault(hostname, {})
                 # oracle_results[hostname][sid] = oracle_analysis

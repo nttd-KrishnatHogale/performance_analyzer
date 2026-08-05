@@ -2,6 +2,16 @@ from performance_analyzer.llm.prompt_builder import PromptBuilder
 
 from performance_analyzer.llm.llm_client import LLMClient
 
+# from backend.configuration.server_configuration_collector import (
+#     ServerConfigurationCollector)
+# from backend.ssh.ssh_client import SSHClient
+
+# ssh = SSHClient()
+
+# configuration = ServerConfigurationCollector(
+#         ssh
+#     ).collect()
+
 
 def sanitize_analysis(data):
 
@@ -45,7 +55,8 @@ class LLMRCAEngine:
 
         correlations,
 
-        jmeter
+        jmeter,
+        configuration
 
     ):
         apache = sanitize_analysis(apache)
@@ -66,7 +77,8 @@ class LLMRCAEngine:
 
             correlations,
 
-            jmeter
+            jmeter,
+            configuration
 
         )
 

@@ -218,9 +218,9 @@ class ServerConfigurationCollector:
 
     def collect(self):
 
-        print("=" * 80)
-        print("COLLECTING SERVER CONFIGURATION")
-        print("=" * 80)
+        # print("=" * 80)
+        # print("COLLECTING SERVER CONFIGURATION")
+        # print("=" * 80)
 
         self.ssh.connect()
 
@@ -233,8 +233,8 @@ class ServerConfigurationCollector:
 
         self.ssh.close()
 
-        print("\nCollected Configuration")
-        print(json.dumps(configuration, indent=4))
+        # print("\nCollected Configuration")
+        # print(json.dumps(configuration, indent=4))
 
         return configuration
 
@@ -244,7 +244,7 @@ class ServerConfigurationCollector:
 
     def get_apache_configuration(self):
 
-        print("\nReading Apache Configuration...")
+        # print("\nReading Apache Configuration...")
 
         command = """
 grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|MaxKeepAliveRequests|MaxRequestsPerChild' /etc/httpd/conf/httpd.conf
@@ -252,8 +252,8 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
 
         output = self.ssh.execute_command(command)
 
-        print("\nApache Raw Output")
-        print(output)
+        # print("\nApache Raw Output")
+        # print(output)
 
         apache = {}
 
@@ -269,8 +269,8 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
             if len(parts) == 2:
                 apache[parts[0]] = parts[1]
 
-        print("\nApache Parsed Configuration")
-        print(apache)
+        # print("\nApache Parsed Configuration")
+        # print(apache)
 
         return apache
 
@@ -280,14 +280,14 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
 
     def get_tomcat_configuration(self):
 
-        print("\nReading Tomcat server.xml...")
+        # print("\nReading Tomcat server.xml...")
 
         xml = self.ssh.execute_command(
-            "cat /home/tomcat/tomcat-7.0.109/conf/server.xml"
+            'sudo su - tomcat -c "cat /home/tomcat/tomcat-7.0.109/conf/server.xml"'
         )
 
-        print("\nTomcat XML")
-        print(xml)
+        # print("\nTomcat XML")
+        # print(xml)
 
         connector = {}
 
@@ -307,7 +307,9 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
 
                         "protocol": protocol,
 
-                        "maxThreads": node.attrib.get("maxThreads"),
+                        "maxThreads":
+                                        node.attrib.get("maxThreads")
+                                        or node.attrib.get("MaxThreads"),
 
                         "acceptCount": node.attrib.get("acceptCount"),
 
@@ -322,8 +324,8 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
             print("Unable to parse server.xml")
             print(e)
 
-        print("\nTomcat Parsed Configuration")
-        print(connector)
+        # print("\nTomcat Parsed Configuration")
+        # print(connector)
 
         return connector
 
@@ -333,14 +335,14 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
 
     def get_jdbc_configuration(self):
 
-        print("\nReading JDBC Context...")
+        # print("\nReading JDBC Context...")
 
         xml = self.ssh.execute_command(
-            "cat /home/tomcat/tomcat-7.0.109/webapps/jpetstore/META-INF/context.xml"
+           'sudo su - tomcat -c "cat /home/tomcat/tomcat-7.0.109/webapps/jpetstore/META-INF/context.xml"'
         )
 
-        print("\nJDBC XML")
-        print(xml)
+        # print("\nJDBC XML")
+        # print(xml)
 
         jdbc = {}
 
@@ -369,8 +371,8 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
             print("Unable to parse context.xml")
             print(e)
 
-        print("\nJDBC Parsed Configuration")
-        print(jdbc)
+        # print("\nJDBC Parsed Configuration")
+        # print(jdbc)
 
         return jdbc
 
@@ -383,11 +385,11 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
         print("\nReading JVM Configuration...")
 
         text = self.ssh.execute_command(
-            "cat /home/tomcat/tomcat-7.0.109/bin/setenv.sh"
+            'sudo su - tomcat -c "cat /home/tomcat/tomcat-7.0.109/bin/setenv.sh"'
         )
 
-        print("\nsetenv.sh")
-        print(text)
+        # print("\nsetenv.sh")
+        # print(text)
 
         jvm = {}
 
@@ -413,7 +415,7 @@ grep -E 'ServerLimit|MaxClients|MaxRequestWorkers|KeepAlive|KeepAliveTimeout|Max
         else:
             jvm["GC"] = "Unknown"
 
-        print("\nJVM Parsed Configuration")
-        print(jvm)
+        # print("\nJVM Parsed Configuration")
+        # print(jvm)
 
         return jvm

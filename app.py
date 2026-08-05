@@ -48,11 +48,19 @@ try:
 
     server_config = collector.collect()
 
-    print(server_config)
+    # print(server_config)
 
 except Exception as e:
     print("SERVER CONFIG COLLECTION FAILED")
     print(e)
+
+
+
+
+from backend.configuration.jmeter_config import JMeterConfig
+jmeterconfig=JMeterConfig().collect()
+# print("jmeter config", jmeterconfig)
+
 
 
 logger.info("Dashboard loaded")

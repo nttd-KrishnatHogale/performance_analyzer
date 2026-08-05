@@ -271,6 +271,8 @@ def run_analysis(config_path,run_id):
 
             if df is not None:
                 print(df.columns.tolist())
+                print("Rows :", len(df))
+                print(df.head())
             else:
                 print("No tomcat Data")
 
@@ -285,6 +287,8 @@ def run_analysis(config_path,run_id):
 
                 if df is not None:
                     print(df.columns.tolist())
+                    print("Rows :", len(df))
+                    print(df.head())
 
     print("=" * 100)
 
@@ -320,6 +324,18 @@ def run_analysis(config_path,run_id):
 
     for event in timeline:
         print(event)
+
+    print("\nTimeline Data Keys")
+    print(timeline_data.keys())
+
+    print("\nApache")
+    print(timeline_data["apache"])
+
+    print("\nTomcat")
+    print(timeline_data["tomcat"])
+
+    print("\nOracle")
+    print(timeline_data["oracle"])
 
     from performance_analyzer.apache.apache_analyzer import ApacheAnalyzer
     from performance_analyzer.tomcat.tomcat_analyzer import TomcatAnalyzer
@@ -378,6 +394,41 @@ def run_analysis(config_path,run_id):
     final_results = run_rule_engine_with_output(
                 analysis_results
             )
+    
+
+
+    from backend.configuration.server_configuration_collector import (
+    ServerConfigurationCollector)
+    from backend.ssh.ssh_client import SSHClient
+    from backend.configuration.jmeter_config import JMeterConfig
+    ssh = SSHClient()
+
+    configuration = ServerConfigurationCollector(
+        ssh
+    ).collect()
+
+    configuration["jmeter"] = JMeterConfig().collect()
+
+
+
+    print("\n" + "="*80)
+    print("DATA SENT TO LLM")
+    print("="*80)
+
+    print("\nApache Analysis")
+    print(apache_analysis)
+
+    print("\nTomcat Analysis")
+    print(tomcat_analysis)
+
+    print("\nOracle Analysis")
+    print(oracle_analysis)
+
+    print("\nJMeter Analysis")
+    print(jmeter_analysis)
+
+    print("\nCorrelations")
+    print(correlations)
 
     llm_report = LLMRCAEngine().generate(
 
@@ -391,7 +442,8 @@ def run_analysis(config_path,run_id):
 
         correlations,
 
-        jmeter_analysis
+        jmeter_analysis,
+        configuration
 
     )
 
