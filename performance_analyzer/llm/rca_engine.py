@@ -1,6 +1,8 @@
 from performance_analyzer.llm.prompt_builder import PromptBuilder
 
 from performance_analyzer.llm.llm_client import LLMClient
+from performance_analyzer.summarizer.metrics_summary import MetricsSummary
+
 
 # from backend.configuration.server_configuration_collector import (
 #     ServerConfigurationCollector)
@@ -13,25 +15,25 @@ from performance_analyzer.llm.llm_client import LLMClient
 #     ).collect()
 
 
-def sanitize_analysis(data):
+# def sanitize_analysis(data):
 
-    clean = {}
+#     clean = {}
 
-    for hostname, instances in data.items():
+#     for hostname, instances in data.items():
 
-        clean[hostname] = {}
+#         clean[hostname] = {}
 
-        for instance, analysis in instances.items():
+#         for instance, analysis in instances.items():
 
-            clean[hostname][instance] = {
+#             clean[hostname][instance] = {
 
-                "timeline": analysis.get("timeline", []),
+#                 "timeline": analysis.get("timeline", []),
 
-                "findings": analysis.get("findings", [])
+#                 "findings": analysis.get("findings", [])
 
-            }
+#             }
 
-    return clean
+#     return clean
 
 class LLMRCAEngine:
 
@@ -56,30 +58,41 @@ class LLMRCAEngine:
         correlations,
 
         jmeter,
-        configuration
+        configuration,
+            dashboard_summary
+
 
     ):
-        apache = sanitize_analysis(apache)
+        # apache = sanitize_analysis(apache)
 
-        tomcat = sanitize_analysis(tomcat)
+        # tomcat = sanitize_analysis(tomcat)
 
-        oracle = sanitize_analysis(oracle)
+        # oracle = sanitize_analysis(oracle)
+
+
+        apache_summary = MetricsSummary.summarize_apache(apache)
+
+        tomcat_summary = MetricsSummary.summarize_tomcat(tomcat)
+
+        oracle_summary = MetricsSummary.summarize_oracle(oracle)
+        jmeter_summary = MetricsSummary.summarize_jmeter(jmeter)
 
         prompt = self.prompt.build(
 
             timeline,
-
-            apache,
-
-            tomcat,
-
-            oracle,
-
             correlations,
+            configuration,
+            apache_summary,
+            tomcat_summary,
+            oracle_summary,
+            jmeter_summary,
+            dashboard_summary
 
-            jmeter,
-            configuration
+            # apache,
 
+            # tomcat,
+
+            # oracle,
         )
 
         report = self.client.generate(prompt)

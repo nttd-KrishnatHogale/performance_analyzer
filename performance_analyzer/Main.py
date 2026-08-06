@@ -408,27 +408,35 @@ def run_analysis(config_path,run_id):
     ).collect()
 
     configuration["jmeter"] = JMeterConfig().collect()
+    from performance_analyzer.jmeter.dashboard_locator import DashboardLocator
+    from performance_analyzer.jmeter.dashboard_parser import DashboardParser
+
+    dashboard = DashboardLocator.latest_dashboard(
+        r"C:/KrishnatHOgale/PerformancePlatform/reports/jmeter"
+    )
+
+    dashboard_summary = DashboardParser().parse(dashboard)
 
 
 
-    print("\n" + "="*80)
-    print("DATA SENT TO LLM")
-    print("="*80)
+    # print("\n" + "="*80)
+    # print("DATA SENT TO LLM")
+    # print("="*80)
 
-    print("\nApache Analysis")
-    print(apache_analysis)
+    # print("\nApache Analysis")
+    # print(apache_analysis)
 
-    print("\nTomcat Analysis")
-    print(tomcat_analysis)
+    # print("\nTomcat Analysis")
+    # print(tomcat_analysis)
 
-    print("\nOracle Analysis")
-    print(oracle_analysis)
+    # print("\nOracle Analysis")
+    # print(oracle_analysis)
 
-    print("\nJMeter Analysis")
-    print(jmeter_analysis)
+    # print("\nJMeter Analysis")
+    # print(jmeter_analysis)
 
-    print("\nCorrelations")
-    print(correlations)
+    # print("\nCorrelations")
+    # print(correlations)
 
     llm_report = LLMRCAEngine().generate(
 
@@ -443,7 +451,9 @@ def run_analysis(config_path,run_id):
         correlations,
 
         jmeter_analysis,
-        configuration
+        configuration,
+        dashboard_summary,
+    
 
     )
 

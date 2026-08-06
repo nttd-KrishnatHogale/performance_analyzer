@@ -1,3 +1,4 @@
+from performance_analyzer.utils.json_utils import make_json_safe
 from performance_analyzer.oracle.oracle_metrics import OracleMetrics
 from performance_analyzer.oracle.oracle_rules import OracleFinding
 from performance_analyzer.oracle.sql_plan_parser import SQLPlanParser
@@ -48,7 +49,7 @@ class OracleAnalyzer:
 
             row=top_sql.iloc[0]
 
-            elapsed=row["elapsed_time"]
+            elapsed=float(row["elapsed_time"])
 
             if elapsed>settings.DB_EXEC_TIME_THRESHOLD:
 
@@ -68,11 +69,11 @@ class OracleAnalyzer:
 
                         evidence={
 
-                            "sql_id":row["sql_id"],
+                            "sql_id":str(row["sql_id"]),
 
-                            "elapsed":elapsed,
+                            "elapsed":float(row["elapsed_time"]),
 
-                            "sql":row["sql_text"]
+                            "sql":str(row["sql_text"])
 
                         }
 
@@ -90,7 +91,7 @@ class OracleAnalyzer:
 
         if cpu is not None:
 
-            peak=cpu["db_cpu"].max()
+            peak=float(cpu["db_cpu"].max())
 
             findings.append(
 
@@ -160,7 +161,7 @@ class OracleAnalyzer:
 
         if execution is not None:
 
-            peak=execution["executions"].max()
+            peak=float(execution["executions"].max())
 
             findings.append(
 
@@ -192,7 +193,8 @@ class OracleAnalyzer:
 
         # -------------------------------------
 
-        parsed_plans=self.plan_parser.parse(plans)
+        # parsed_plans=self.plan_parser.parse(plans)
+        parsed_plans = make_json_safe(self.plan_parser.parse(plans))
 
         for plan in parsed_plans:
 
@@ -241,7 +243,22 @@ class OracleAnalyzer:
                     )
 
                 )
-        return {
+
+
+        # top_sql_records = []
+
+        # if top_sql is not None:
+
+        #     top_sql = top_sql.copy()
+
+        #     for col in top_sql.columns:
+
+        #         top_sql[col] = top_sql[col].apply(
+        #             lambda x: x.item() if hasattr(x, "item") else x
+        #         )
+
+        #     top_sql_records = top_sql.to_dict(orient="records")
+        return make_json_safe({
             "timeline": timeline,
             "findings": [asdict(f) for f in findings],
             "top_sql": (
@@ -249,7 +266,13 @@ class OracleAnalyzer:
                 if top_sql is not None else []
             ),
             "plans": parsed_plans
-        }
+        })
+        # return {
+        #     "timeline": timeline,
+        #     "findings": [asdict(f) for f in findings],
+        #     "top_sql": top_sql_records,
+        #     "plans": parsed_plans
+        # }
         # return {
 
         #     "timeline":timeline,

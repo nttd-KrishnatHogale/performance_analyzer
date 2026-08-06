@@ -272,13 +272,28 @@ class TimelineBuilder:
                 for table, df in oracle_data.items():
 
                     print("\nTable:", table)
-
+                    print("Rows:", len(df))
                     if df is None:
                         print("None")
                         continue
 
                     print("Rows:", len(df))
                     print(df.head())
+
+                print("="*80)
+                print("ORACLE DATA RECEIVED BY ANALYZER")
+                print("="*80)
+
+                for table_name, df in oracle_data.items():
+
+                    if df is None:
+                        print(table_name, "-> None")
+                    else:
+                        print(
+                            table_name,
+                            "Rows:", len(df),
+                            "Columns:", list(df.columns)
+                        )
                 
                 oracle_analysis = self.oracle_analyzer.analyze(
                     oracle_data,

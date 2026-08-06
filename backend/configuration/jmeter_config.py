@@ -1,31 +1,3 @@
-# class JMeterConfig:
-
-#     def collect(
-
-#         self,
-
-#         users,
-
-#         ramp_up,
-
-#         duration,
-
-#         loops=None
-
-#     ):
-
-#         return {
-
-#             "users": users,
-
-#             "ramp_up": ramp_up,
-
-#             "duration": duration,
-
-#             "loops": loops
-
-#         }
-
 import xml.etree.ElementTree as ET
 
 from config.config_service import ConfigService
@@ -103,7 +75,7 @@ class JMeterConfig:
 
         }
 
-        print("\nJMeter Configuration")
-        print(configuration)
+        # print("\nJMeter Configuration")
+        # print(configuration)
 
         return configuration
