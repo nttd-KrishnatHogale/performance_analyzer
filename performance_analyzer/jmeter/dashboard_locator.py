@@ -25,6 +25,6 @@ class DashboardLocator:
 
         latest = dashboards[0]
 
-        print(f"Using dashboard: {latest}")
+        # print(f"Using dashboard: {latest}")
 
         return latest

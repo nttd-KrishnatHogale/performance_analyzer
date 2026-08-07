@@ -28,9 +28,9 @@ def build_flows(metrics_collection, config):
         db_h = flow["db"]["hostname"]
         db_sid = flow["db"]["sid"]
 
-        print("=" * 80)
-        print("Servers in metrics_collection:")
-        print(metrics_collection["servers"].keys())
+        # print("=" * 80)
+        # print("Servers in metrics_collection:")
+        # print(metrics_collection["servers"].keys())
 
         print("Web Host :", web_h)
         print("App Host :", app_h)

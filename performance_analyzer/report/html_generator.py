@@ -766,97 +766,6 @@ li {{
 
 <div class="section">
 
-<h2>Detected Timeline Events</h2>
-
-<table>
-
-<tr>
-
-<th>Start</th>
-<th>Peak</th>
-<th>Recovery</th>
-<th>Component</th>
-<th>Metric</th>
-
-</tr>
-
-"""
-
-        for e in timeline:
-
-            html += f"""
-<tr>
-
-<td>{e.start_time}</td>
-<td>{e.peak_time}</td>
-<td>{e.recovery_time}</td>
-<td>{e.component}</td>
-<td>{e.metric}</td>
-
-</tr>
-"""
-
-        html += """
-</table>
-
-</div>
-
-
-<div class="section">
-
-<h2>Correlation Chain</h2>
-
-<table>
-
-<tr>
-
-<th>Source</th>
-<th>Target</th>
-<th>Relation</th>
-<th>Confidence</th>
-
-</tr>
-
-"""
-
-        if correlations:
-
-            for c in correlations:
-
-                html += f"""
-
-<tr>
-
-<td>{c.get("source","")}</td>
-<td>{c.get("target","")}</td>
-<td>{c.get("relation","")}</td>
-<td>{c.get("confidence","")}</td>
-
-</tr>
-
-"""
-
-        else:
-
-            html += """
-<tr>
-
-<td colspan="4">
-No correlation detected.
-</td>
-
-</tr>
-"""
-
-        html += """
-
-</table>
-
-</div>
-
-
-<div class="section">
-
 <h2>Supporting Evidence</h2>
 
 <ul>
@@ -886,21 +795,51 @@ No correlation detected.
 
             for h in hypotheses:
 
-                html += f"""
+                if isinstance(h, dict):
 
-<div class="card">
+                    hypothesis = (
+                        h.get("hypothesis")
+                        or h.get("name")
+                        or ""
+                    )
+
+                    reason = (
+                        h.get("reason")
+                        or h.get("rationale")
+                        or ""
+                    )
+
+                    evidence = (
+                        h.get("evidence")
+                        or h.get("evidence_summary")
+                        or ""
+                    )
+
+                    if isinstance(evidence, list):
+                        evidence = "<br>".join(
+                            f"• {e}" for e in evidence
+                        )
+
+                    html += f"""
+<div style="margin-bottom:20px;">
 
 <b>Hypothesis</b><br>
+{hypothesis}<br><br>
 
-{h.get("hypothesis","")}<br><br>
 
-<b>Status</b><br>
+<b>Evidence</b><br>
+{evidence}
 
-{h.get("status","")}<br><br>
+</div>
+"""
 
-<b>Reason</b><br>
+                else:
 
-{h.get("reason","")}
+                    html += f"""
+
+<div style="margin-bottom:20px;">
+
+{h}
 
 </div>
 
@@ -927,17 +866,22 @@ No correlation detected.
 
             for b in bottlenecks:
 
-                html += f"""
+                if isinstance(b, dict):
 
-<div class="card">
+                    evidence = (
+                        b.get("evidence")
+                        or b.get("evidence_summary")
+                        or ""
+                    )
 
-<b>Component</b><br>
+                    if isinstance(evidence, list):
+                        evidence = "<br>".join(
+                            f"• {e}" for e in evidence
+                        )
 
-{b.get("component","")}<br><br>
+                    html += f"""
 
-<b>Type</b><br>
-
-{b.get("type","")}<br><br>
+<div style="margin-bottom:20px;">
 
 <b>Classification</b><br>
 
@@ -945,7 +889,19 @@ No correlation detected.
 
 <b>Evidence</b><br>
 
-{b.get("evidence","")}
+{evidence}
+
+</div>
+
+"""
+
+                else:
+
+                    html += f"""
+
+<div style="margin-bottom:20px;">
+
+{b}
 
 </div>
 
@@ -972,17 +928,16 @@ No correlation detected.
 
             for r in recommendations:
 
-                html += f"""
+                if isinstance(r, dict):
 
-<div class="card">
+                    html += f"""
+
+<div style="margin-bottom:25px;">
 
 <b>Action</b><br>
 
 {r.get("action","")}<br><br>
 
-<b>Details</b><br>
-
-{r.get("details","")}<br><br>
 
 <b>Expected Benefit</b><br>
 
@@ -992,13 +947,23 @@ No correlation detected.
 
 {r.get("risk","")}<br><br>
 
-<b>Restart Required</b><br>
 
-{r.get("restart_required","")}<br><br>
 
 <b>Validation</b><br>
 
 {r.get("validation","")}
+
+</div>
+
+"""
+
+                else:
+
+                    html += f"""
+
+<div style="margin-bottom:20px;">
+
+{r}
 
 </div>
 

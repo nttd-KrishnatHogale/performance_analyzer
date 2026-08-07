@@ -325,14 +325,14 @@ def run_analysis(config_path,run_id):
     for event in timeline:
         print(event)
 
-    print("\nTimeline Data Keys")
-    print(timeline_data.keys())
+    # print("\nTimeline Data Keys")
+    # print(timeline_data.keys())
 
-    print("\nApache")
-    print(timeline_data["apache"])
+    # print("\nApache")
+    # print(timeline_data["apache"])
 
-    print("\nTomcat")
-    print(timeline_data["tomcat"])
+    # print("\nTomcat")
+    # print(timeline_data["tomcat"])
 
     print("\nOracle")
     print(timeline_data["oracle"])

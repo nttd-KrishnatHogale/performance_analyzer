@@ -170,3 +170,5 @@ tmp/
 # Windows
 # ============================================
 ehthumbs.db
+# graphify-axet
+.graphify/
