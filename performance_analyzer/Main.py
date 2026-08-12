@@ -441,15 +441,10 @@ def run_analysis(config_path,run_id):
     llm_report = LLMRCAEngine().generate(
 
         timeline,
-
         apache_analysis,
-
         tomcat_analysis,
-
         oracle_analysis,
-
         correlations,
-
         jmeter_analysis,
         configuration,
         dashboard_summary,
