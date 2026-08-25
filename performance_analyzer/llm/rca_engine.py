@@ -1,9 +1,9 @@
 from performance_analyzer.llm.prompt_builder import PromptBuilder
 
-# from performance_analyzer.llm.llm_client import LLMClient
+from performance_analyzer.llm.llm_client import LLMClient
 from performance_analyzer.summarizer.metrics_summary import MetricsSummary
 
-from performance_analyzer.llm.enabler_llm_client import EnablerLLMClient
+# from performance_analyzer.llm.enabler_llm_client import EnablerLLMClient
 # from backend.configuration.server_configuration_collector import (
 #     ServerConfigurationCollector)
 # from backend.ssh.ssh_client import SSHClient
@@ -41,11 +41,11 @@ class LLMRCAEngine:
 
         self.prompt = PromptBuilder()
 
-        # self.client = LLMClient()
-        self.client = EnablerLLMClient(
-            # flow_url="YOUR_AXET_URL",
-            # bearer_token="YOUR_BEARER_TOKEN"
-        )
+        self.client = LLMClient()
+        # self.client = EnablerLLMClient(
+        #     # flow_url="YOUR_AXET_URL",
+        #     # bearer_token="YOUR_BEARER_TOKEN"
+        # )
 
     def generate(
 

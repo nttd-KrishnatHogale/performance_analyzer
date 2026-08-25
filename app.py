@@ -217,10 +217,10 @@ col2.metric(
     completed
 )
 
-col3.metric(
-    "Running",
-    running
-)
+# col3.metric(
+#     "Running",
+#     running
+# )
 
 col4.metric(
     "Failed",

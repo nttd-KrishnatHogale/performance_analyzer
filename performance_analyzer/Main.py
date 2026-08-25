@@ -1,17 +1,18 @@
 # from core.config_manager import ConfigManager
-from performance_analyzer.config import settings
+# from performance_analyzer.config import settings
 from performance_analyzer.core.config_manager import ConfigManager
 from performance_analyzer.data_sources.data_loader import dataLoader
 # from data_sources.data_loader import dataLoader
 from performance_analyzer.aggregation.aggregator import aggregate_all
 from performance_analyzer.anomaly_detection.detector import detect_anomalies_and_patterns
 from performance_analyzer.rule_engine.rule_engine import run_rule_engine_with_output
-from performance_analyzer.utils.output_writer import save_detailed_output, generate_html_report
+# from performance_analyzer.utils.output_writer import save_detailed_output, generate_html_report
 import json
 from backend.utils.logger import Logger
 
 from performance_analyzer.llm.rca_engine import LLMRCAEngine
 from performance_analyzer.report.report_generator import ReportGenerator
+
 
 
 logger = Logger.get_logger()
@@ -337,9 +338,9 @@ def run_analysis(config_path,run_id):
     print("\nOracle")
     print(timeline_data["oracle"])
 
-    from performance_analyzer.apache.apache_analyzer import ApacheAnalyzer
-    from performance_analyzer.tomcat.tomcat_analyzer import TomcatAnalyzer
-    from performance_analyzer.oracle.oracle_analyzer import OracleAnalyzer
+    # from performance_analyzer.apache.apache_analyzer import ApacheAnalyzer
+    # from performance_analyzer.tomcat.tomcat_analyzer import TomcatAnalyzer
+    # from performance_analyzer.oracle.oracle_analyzer import OracleAnalyzer
 
     # apache_analysis = ApacheAnalyzer().analyze(metrics_collection)
 
@@ -459,7 +460,6 @@ def run_analysis(config_path,run_id):
 # Report Generation
 # ==========================================================
 
-    from performance_analyzer.report.report_generator import ReportGenerator
 
     reports = ReportGenerator().generate(
 
@@ -475,9 +475,9 @@ def run_analysis(config_path,run_id):
 
     final_results["reports"] = reports
 
-    save_detailed_output(final_results)
+    # save_detailed_output(final_results)
 
-    generate_html_report(final_results)
+    # generate_html_report(final_results)
 
     return final_results
 

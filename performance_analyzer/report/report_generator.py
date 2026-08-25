@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from performance_analyzer.report.html_generator import HTMLGenerator
-from performance_analyzer.report.pdf_generator import PDFGenerator
+# from performance_analyzer.report.pdf_generator import PDFGenerator
 
 
 class ReportGenerator:
@@ -27,12 +27,12 @@ class ReportGenerator:
             correlations
         )
 
-        PDFGenerator().generate(
-            html_path,
-            pdf_path
-        )
+        # PDFGenerator().generate(
+        #     html_path,
+        #     pdf_path
+        # )
 
         return {
             "html": str(html_path),
-            "pdf": str(pdf_path)
+            # "pdf": str(pdf_path)
         }

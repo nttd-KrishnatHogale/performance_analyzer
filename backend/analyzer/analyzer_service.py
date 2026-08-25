@@ -71,16 +71,25 @@ class AnalyzerService:
             # analyzer.run()           
 
             report_directory = Path("reports") / str(run_id)
-            report_directory.mkdir(
-                parents=True,
-                exist_ok=True
-            )
-            generated_html = Path("output") / "flow_1_report.html"
-            # html_report = report_directory / "report.html"
             html_report = report_directory / "report.html"
-            # json_report = report_directory / "report.json"
-            import shutil
-            shutil.copy2(generated_html, html_report)
+            if not html_report.exists():
+                raise FileNotFoundError(
+                    f"Generated report not found: {html_report}"
+                )
+
+            logger.info(
+                f"New report generated successfully: {html_report}"
+            )
+
+#             report_directory.mkdir(
+#                 parents=True,
+#                 exist_ok=True
+#             )
+#             generated_html = Path("output") / "flow_1_report.html"
+#             # html_report = report_directory / "report.html"
+# /            # json_report = report_directory / "report.json"
+#             import shutil
+#             shutil.copy2(generated_html, html_report)
 
             json_report = ""
             #
