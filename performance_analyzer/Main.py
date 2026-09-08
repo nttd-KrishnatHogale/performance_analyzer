@@ -3,9 +3,9 @@
 from performance_analyzer.core.config_manager import ConfigManager
 from performance_analyzer.data_sources.data_loader import dataLoader
 # from data_sources.data_loader import dataLoader
-from performance_analyzer.aggregation.aggregator import aggregate_all
-from performance_analyzer.anomaly_detection.detector import detect_anomalies_and_patterns
-from performance_analyzer.rule_engine.rule_engine import run_rule_engine_with_output
+# from performance_analyzer.aggregation.aggregator import aggregate_all
+# from performance_analyzer.anomaly_detection.detector import detect_anomalies_and_patterns
+# from performance_analyzer.rule_engine.rule_engine import run_rule_engine_with_output
 # from performance_analyzer.utils.output_writer import save_detailed_output, generate_html_report
 import json
 from backend.utils.logger import Logger
@@ -56,151 +56,151 @@ def print_sample_data(metrics_collection, rows=5):
                 print(f"\n   [{table.upper()}]")
                 print(df.head(rows))
 
-def print_actionable_output(final_results):
+# def print_actionable_output(final_results):
 
-    for flow_id, data in final_results["flows"].items():
+#     for flow_id, data in final_results["flows"].items():
 
-        print("\n" + "=" * 80)
-        print(f"FLOW: {flow_id}")
-        print("=" * 80)
+#         print("\n" + "=" * 80)
+#         print(f"FLOW: {flow_id}")
+#         print("=" * 80)
 
-        # ======================================================
-        # ✅ SUMMARY
-        # ======================================================
-        summary = data.get("summary", {})
-        print("\n✅ SUMMARY")
-        print(f"Primary Bottleneck : {summary.get('primary_bottleneck')}")
-        print(f"Confidence          : {summary.get('confidence')}")
-        print(f"Total Issues        : {summary.get('total_issues_detected')}")
+#         # ======================================================
+#         # ✅ SUMMARY
+#         # ======================================================
+#         summary = data.get("summary", {})
+#         print("\n✅ SUMMARY")
+#         print(f"Primary Bottleneck : {summary.get('primary_bottleneck')}")
+#         print(f"Confidence          : {summary.get('confidence')}")
+#         print(f"Total Issues        : {summary.get('total_issues_detected')}")
 
-        # ======================================================
-        # ✅ ROOT CAUSE CHAIN
-        # ======================================================
-        print("\n🔁 ROOT CAUSE CHAIN")
+#         # ======================================================
+#         # ✅ ROOT CAUSE CHAIN
+#         # ======================================================
+#         print("\n🔁 ROOT CAUSE CHAIN")
 
-        chain = data.get("root_cause_chain", [])
+#         chain = data.get("root_cause_chain", [])
 
-        if chain:
-            print(" → ".join(chain))
-        else:
-            print("No clear chain identified")
+#         if chain:
+#             print(" → ".join(chain))
+#         else:
+#             print("No clear chain identified")
 
-        # ======================================================
-        # ✅ LAYER BREAKDOWN
-        # ======================================================
-        print("\n📊 LAYER-WISE BREAKDOWN")
+#         # ======================================================
+#         # ✅ LAYER BREAKDOWN
+#         # ======================================================
+#         print("\n📊 LAYER-WISE BREAKDOWN")
 
-        layers = data.get("layer_breakdown", {})
+#         layers = data.get("layer_breakdown", {})
 
-        for layer, issues in layers.items():
+#         for layer, issues in layers.items():
 
-            print(f"\n--- {layer} ---")
+#             print(f"\n--- {layer} ---")
 
-            if not issues:
-                print("No major issues")
-                continue
+#             if not issues:
+#                 print("No major issues")
+#                 continue
 
-            for i in issues:
-                print(f"- {i['issue']} | {i['severity']} | Score: {i['score']}")
-                print(f"  ➤ {i['detail']}")
+#             for i in issues:
+#                 print(f"- {i['issue']} | {i['severity']} | Score: {i['score']}")
+#                 print(f"  ➤ {i['detail']}")
 
-        # ======================================================
-        # ✅ EVIDENCE
-        # ======================================================
-        print("\n📌 SUPPORTING EVIDENCE")
+#         # ======================================================
+#         # ✅ EVIDENCE
+#         # ======================================================
+#         print("\n📌 SUPPORTING EVIDENCE")
 
-        evidence = data.get("evidence", [])
+#         evidence = data.get("evidence", [])
 
-        if not evidence:
-            print("No evidence available")
-        else:
-            for e in evidence:
-                print(f"- {e['cause']} (Score: {e['score']})")
-                print(f"  ➤ {e['justification']}")
+#         if not evidence:
+#             print("No evidence available")
+#         else:
+#             for e in evidence:
+#                 print(f"- {e['cause']} (Score: {e['score']})")
+#                 print(f"  ➤ {e['justification']}")
 
-        # ======================================================
-        # ✅ RECOMMENDATIONS
-        # ======================================================
-        print("\n✅ ACTIONABLE RECOMMENDATIONS")
+#         # ======================================================
+#         # ✅ RECOMMENDATIONS
+#         # ======================================================
+#         print("\n✅ ACTIONABLE RECOMMENDATIONS")
 
-        actions = data.get("recommendations", [])
+#         actions = data.get("recommendations", [])
 
-        if not actions:
-            print("No recommendations available")
-        else:
-            for idx, action in enumerate(actions, 1):
-                print(f"{idx}. {action}")
+#         if not actions:
+#             print("No recommendations available")
+#         else:
+#             for idx, action in enumerate(actions, 1):
+#                 print(f"{idx}. {action}")
 
-        print("\n" + "=" * 80)
+#         print("\n" + "=" * 80)
 
-def print_short_output(final_results):
+# def print_short_output(final_results):
 
-    for flow_id, data in final_results["flows"].items():
+#     for flow_id, data in final_results["flows"].items():
 
-        print("=" * 60)
-        print(f"FLOW: {flow_id}")
-        print("=" * 60)
+#         print("=" * 60)
+#         print(f"FLOW: {flow_id}")
+#         print("=" * 60)
 
-        layers = data.get("layer_breakdown", {})
-        insights = data.get("evidence", [])
-        recommendations = data.get("recommendations", [])
-        summary = data.get("summary", {})
+#         layers = data.get("layer_breakdown", {})
+#         insights = data.get("evidence", [])
+#         recommendations = data.get("recommendations", [])
+#         summary = data.get("summary", {})
 
-        # --------------------------------------------------
-        # ✅ BOTTLENECKS
-        # --------------------------------------------------
-        print("\n🚨 BOTTLENECKS")
+#         # --------------------------------------------------
+#         # ✅ BOTTLENECKS
+#         # --------------------------------------------------
+#         print("\n🚨 BOTTLENECKS")
 
-        found = False
-        for layer, issues in layers.items():
+#         found = False
+#         for layer, issues in layers.items():
 
-            for i in issues:
-                if i["severity"] == "HIGH":
-                    print(f"- {i['issue']} ({layer})")
-                    found = True
+#             for i in issues:
+#                 if i["severity"] == "HIGH":
+#                     print(f"- {i['issue']} ({layer})")
+#                     found = True
 
-        if not found:
-            print("- No major bottlenecks detected")
+#         if not found:
+#             print("- No major bottlenecks detected")
 
-        # --------------------------------------------------
-        # ✅ RISKS
-        # --------------------------------------------------
-        print("\n⚠️ RISKS")
+#         # --------------------------------------------------
+#         # ✅ RISKS
+#         # --------------------------------------------------
+#         print("\n⚠️ RISKS")
 
-        risks = []
+#         risks = []
 
-        for layer, issues in layers.items():
+#         for layer, issues in layers.items():
 
-            for i in issues:
-                if i["severity"] == "MEDIUM":
-                    risks.append(i["issue"])
+#             for i in issues:
+#                 if i["severity"] == "MEDIUM":
+#                     risks.append(i["issue"])
 
-        if risks:
-            for r in set(risks):
-                print(f"- {r}")
-        else:
-            print("- No significant risks")
+#         if risks:
+#             for r in set(risks):
+#                 print(f"- {r}")
+#         else:
+#             print("- No significant risks")
 
-        # --------------------------------------------------
-        # ✅ ACTION ITEMS
-        # --------------------------------------------------
-        print("\n✅ ACTION ITEMS")
+#         # --------------------------------------------------
+#         # ✅ ACTION ITEMS
+#         # --------------------------------------------------
+#         print("\n✅ ACTION ITEMS")
 
-        if recommendations:
-            for idx, r in enumerate(recommendations[:5], 1):
-                print(f"{idx}. {r}")
-        else:
-            print("No actions required")
+#         if recommendations:
+#             for idx, r in enumerate(recommendations[:5], 1):
+#                 print(f"{idx}. {r}")
+#         else:
+#             print("No actions required")
 
-        # --------------------------------------------------
-        # ✅ CONFIDENCE
-        # --------------------------------------------------
-        print(f"\n🎯 CONFIDENCE: {summary.get('confidence')}")
-        print("Confidence High = Strong evidence. Act Immediately")
-        print("Confidence Medium = Partial evidence. Observe")
-        print("Confidence Weak = Weak evidence. Ignore")
+#         # --------------------------------------------------
+#         # ✅ CONFIDENCE
+#         # --------------------------------------------------
+#         print(f"\n🎯 CONFIDENCE: {summary.get('confidence')}")
+#         print("Confidence High = Strong evidence. Act Immediately")
+#         print("Confidence Medium = Partial evidence. Observe")
+#         print("Confidence Weak = Weak evidence. Ignore")
 
-        print("\n" + "=" * 60 + "\n")
+#         print("\n" + "=" * 60 + "\n")
 
 
 
@@ -377,24 +377,24 @@ def run_analysis(config_path,run_id):
 
   
 
-    aggregated_data = aggregate_all(
-        metrics_collection,
-        config
-    )
-
-    analysis_results = detect_anomalies_and_patterns(
-        aggregated_data
-    )
-    # from performance_analyzer.timeline.timeline_builder import TimelineBuilder
-
-    # timeline = TimelineBuilder().build(
+    # aggregated_data = aggregate_all(
     #     metrics_collection,
-    #     settings
+    #     config
     # )
 
-    final_results = run_rule_engine_with_output(
-                analysis_results
-            )
+    # analysis_results = detect_anomalies_and_patterns(
+    #     aggregated_data
+    # )
+    # # from performance_analyzer.timeline.timeline_builder import TimelineBuilder
+
+    # # timeline = TimelineBuilder().build(
+    # #     metrics_collection,
+    # #     settings
+    # # )
+
+    # final_results = run_rule_engine_with_output(
+    #             analysis_results
+    #         )
     
 
 
@@ -452,8 +452,11 @@ def run_analysis(config_path,run_id):
     
 
     )
+    final_results = {
+    "llm_report": llm_report
+}
 
-    final_results["llm_report"] = llm_report
+    # final_results["llm_report"] = llm_report
 
 
     # ==========================================================
@@ -478,6 +481,7 @@ def run_analysis(config_path,run_id):
     # save_detailed_output(final_results)
 
     # generate_html_report(final_results)
+    print("this is final result line 481", final_results)
 
     return final_results
 
@@ -488,8 +492,9 @@ if __name__ == "__main__":
     results = run_analysis(
         "config/monitoring_config.yaml"
     )
+    print("this is result on 492", results)
     logger.info("Performance Analyzer Completed Successfully")
-    print_short_output(results)
+    # print_short_output(results)
 
 
 
