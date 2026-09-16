@@ -1,46 +1,9 @@
 import json
-# from dataclasses import asdict
-
 import numpy as np
 import pandas as pd
-
+from dataclasses import asdict, is_dataclass
 from dataclasses import asdict, is_dataclass
 
-# def serialize(obj):
-#     if is_dataclass(obj):
-#         return asdict(obj)
-#     if hasattr(obj, "__dict__"):
-#         return obj.__dict__
-#     return str(obj)
-
-
-from dataclasses import asdict, is_dataclass
-
-# def make_json_safe(obj):
-#     """
-#     Recursively convert objects into JSON-serializable objects.
-#     Also converts tuple dictionary keys into strings.
-#     """
-
-#     if is_dataclass(obj):
-#         obj = asdict(obj)
-
-#     if isinstance(obj, dict):
-#         return {
-#             str(k): make_json_safe(v)
-#             for k, v in obj.items()
-#         }
-
-#     if isinstance(obj, list):
-#         return [make_json_safe(i) for i in obj]
-
-#     if isinstance(obj, tuple):
-#         return [make_json_safe(i) for i in obj]
-
-#     if hasattr(obj, "__dict__"):
-#         return make_json_safe(obj.__dict__)
-
-#     return obj
 def make_json_safe(obj):
 
     if is_dataclass(obj):
@@ -87,20 +50,6 @@ class PromptBuilder:
 
     def build(
 
-        # self,
-
-        # timeline,
-
-        # apache,
-
-        # tomcat,
-
-        # oracle,
-
-        # correlations,
-
-        # jmeter,
-        # configuration
          self,
         timeline,
         correlations,
@@ -129,12 +78,7 @@ class PromptBuilder:
                 timeline_json.append(event)
 
         timeline_json = make_json_safe(timeline_json)
-        # apache = make_json_safe(apache)
-        # tomcat = make_json_safe(tomcat)
-        # oracle = make_json_safe(oracle)
-        # correlations = make_json_safe(correlations)
-        # jmeter = make_json_safe(jmeter)
-        # configuration = make_json_safe(configuration) 
+    
         apache_summary = make_json_safe(apache_summary)
         tomcat_summary = make_json_safe(tomcat_summary)
         oracle_summary = make_json_safe(oracle_summary)
@@ -146,14 +90,6 @@ class PromptBuilder:
         print(type(oracle_summary))
         print(oracle_summary)
 
-
-        # print("Timeline Type:", type(timeline))
-        # print("Apache Type:", type(apache))
-        # print("Tomcat Type:", type(tomcat))
-        # print("Oracle Type:", type(oracle))
-        # print("Correlations Type:", type(correlations))
-        # print("JMeter Type:", type(jmeter))
-        # print("Configuration:", type(configuration))
         
         try:
             json.dumps(timeline_json, default=str)
