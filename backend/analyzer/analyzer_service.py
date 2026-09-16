@@ -46,29 +46,11 @@ class AnalyzerService:
         logger.info("=" * 80)
         try:
 
-            # -----------------------------------------------------
-            # TODO
-            # Replace this section with your existing
-            # PerformanceAnalyzer invocation.
-            #
-            # Example:
-            #
-            # analyzer = PerformanceAnalyzer(...)
-            # analyzer.execute()
-            #
-            # -----------------------------------------------------
-            # analyzer = PerformanceAnalyzer(
-            #     jmeter_file=jtl_file,
-            #     runtime_directory=runtime_directory,
-            #     output_directory=report_directory
-            # )
             logger.info("Calling performance_analyzer.Main.run_analysis()")
             run_analysis(
                 config_path="performance_analyzer/config/monitoring_config.yaml",run_id=run_id
-                    # start_time=start_time,
-                    # end_time=end_time
+  
             )
-            # analyzer.run()           
 
             report_directory = Path("reports") / str(run_id)
             html_report = report_directory / "report.html"
