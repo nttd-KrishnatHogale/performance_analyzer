@@ -2,9 +2,7 @@ import time
 from datetime import datetime
 
 from backend.database.repository import ExecutionLogRepository, TestRunRepository
-# from backend.influx.influx_client import InfluxService
 from backend.orchestrator.status_manager import status_manager
-# from backend.storage.metric_storage import MetricStorage
 from backend.utils.logger import Logger
 from backend.analyzer.analyzer_service import AnalyzerService
 
@@ -150,7 +148,6 @@ class ExecutionMonitor:
                 end_time=datetime.now()
             )
             ExecutionManager.clear()
-        # logger.info("Execution Monitor Finished Successfully.")
             return
 
 

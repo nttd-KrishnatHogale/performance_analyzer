@@ -30,9 +30,7 @@ class ApacheAnalyzer:
         timeline=[]
 
         # ------------------------------------------------
-
         # Worker Utilization
-
         # ------------------------------------------------
 
         workers=self.metrics.worker_utilization(modstatus_df)
@@ -84,9 +82,7 @@ class ApacheAnalyzer:
                 )
 
         # ------------------------------------------------
-
         # Latency
-
         # ------------------------------------------------
 
         latency=self.metrics.latency(throughput_df)
@@ -138,9 +134,7 @@ class ApacheAnalyzer:
                 )
 
         # ------------------------------------------------
-
         # Error Rate
-
         # ------------------------------------------------
 
         errors=self.metrics.error_rate(throughput_df)
@@ -203,7 +197,6 @@ class ApacheAnalyzer:
 
             "timeline":timeline,
 
-            # "findings":findings
             "findings": [asdict(f) for f in findings]
 
         }
